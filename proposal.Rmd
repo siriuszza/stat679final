@@ -1,0 +1,31 @@
+---
+title: "**STAT 679 Final Project Proposal**"
+author:
+   - Xiaoyang Wang
+   - Ziang Zeng
+geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm"
+classoption: twocolumn
+output:
+  pdf_document:
+    number_sections: yes
+header-includes: 
+  - \usepackage{booktabs}
+  - \usepackage{bm}
+  - \usepackage{extarrows}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, message = F, echo = F,
+                      fig.height = 4)
+```
+
+# Astronomical Challange 
+
+# Data
+
+# Methods
+
+# Contribution
+
+
