@@ -21,6 +21,9 @@ knitr::opts_chunk$set(warning = F, message = F, echo = F,
 ```
 
 # Astronomical Challange 
+Our research focuses on classifying celestial objects into stars, galaxies or quasars using their spectral characteristics. With the advancement of astronomical technology, we can obtain a large amount of data, including images and spectral information, from telescopes and large-scale photometry.
+
+The central question of our research is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?"
 
 # Data
 
