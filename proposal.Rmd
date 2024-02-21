@@ -30,5 +30,5 @@ The central question of our research is: "How can we effectively use image and s
 # Methods
 
 # Contribution
-
+Our workload is distributed equally in this project. We are going to preprocess the data together by merging and visualizing. As mentioned before, each of us will be responsible to complete one of the separate models with proper tuning and validation. After training the separate models, we will merge the models by combining their results through weighted average or regression to produce a final model with better accuracy expected.
 
