@@ -1,7 +1,9 @@
 # stat679final
-This is a project using sdss/dr17 data to do classification based on image and sepctra info.
-https://skyserver.sdss.org/dr17/
-Using SQL
+This is a project using (\textcolor{blue}{sdss/dr17})[https://skyserver.sdss.org/dr17/] data to do classification based on image and sepctra info.
+
+Using SQL to get metadata:
+
+```
 SELECT TOP 100000
 p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,
 p.run, p.rerun, p.camcol, p.field,
@@ -12,4 +14,4 @@ JOIN SpecObj AS s ON s.bestobjid = p.objid
 WHERE 
   p.u BETWEEN 0 AND 19.6
   AND g BETWEEN 0 AND 20
-
+```
