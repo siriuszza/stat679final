@@ -26,6 +26,66 @@ Our research focuses on classifying celestial objects into stars, galaxies or qu
 The central question of our research is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?"
 
 # Data
+We plan to work with the astronomy dataset containing three types of data: 
+
+1. Image of the celestial objects:
+
+\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/STAR/STAR_1.jpg) \quad ![](./data/QSO/QSO_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg)
+
+2. Image of the spectra of the celestial objects.
+
+\quad ![](./data/GALAXY_spec/GALAXY_spectrum_1.jpg){width=45%}
+
+3. Metadata of the celestial objects, whose variables are as follows:
+
+```{r results='asis'}
+df = read.csv("./data/sdss_dr16.csv")
+vars = colnames(df)
+explanations = c("Object Identifier",
+                 "Right Ascension angle (at J2000 epoch)",
+                 "Declination angle (at J2000 epoch)",
+                 "Ultraviolet filter",
+                 "Green filter",
+                 "Red filter",
+                 "Near Infrared filter",
+                 "Infrared filter",
+                 "Run Number",
+                 "Rerun Number",
+                 "Camera column",
+                 "Field number",
+                 "Unique ID used for optical spectroscopic objects",
+                 "Object class",
+                 "Redshift value based on the increase in wavelength",
+                 "Plate",
+                 "Modified Julian Date",
+                 "fiber ID",
+                 "Plate ID")
+
+tab_exp = data.frame(vars, explanations)
+
+library(kableExtra)
+names(tab_exp) <- sapply(names(tab_exp), function(x) paste0("\\textbf{\\normalsize ", x, "}"))
+
+kable(tab_exp, format = "latex", 
+      booktabs = TRUE,
+      escape = F) %>%
+  kable_styling(full_width = F, position = "left", font_size = 8)
+```
+
+
+They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszza/stat679final/tree/main/data).
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Methods
 
