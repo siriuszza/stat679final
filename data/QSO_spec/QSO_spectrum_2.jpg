@@ -1,0 +1,145 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head><link href="../../skyserver.css" rel="stylesheet" type="text/css" /><link href="../../alerts.css" rel="stylesheet" type="text/css" /><link href="../../FavIcon.ICO" rel="SHORTCUT ICON" />  <!-- a place to hold page-specific css files -->
+  
+  <title>
+	SDSS SkyServer DR16
+</title>
+
+  <style type="text/css">
+    .hrule {color:#666666}
+    .stamptext {color:#aaaaaa;font-size:8pt;}
+  </style>
+
+  </head>
+
+
+    
+
+
+<body background="../images/new_home_bktile.jpg" style="margin-left:25px;margin-top:0px;margin-right:25px;margin-bottom:0px;">
+
+    
+
+  <div id="div_title">
+    <table cellpadding="0" cellspacing="0" border="0" width="200px" style="height:73px">
+      <tr>
+        <td align="left" width="73px" style="height:73px;">
+          <a href="http://www.sdss.org/"><img alt="" class="imgnoborder" src="../images/sdssIVlogo.png" width="73px" /></a>
+        </td>
+        <td>
+          <table width="400px">
+            <tr>
+              <td width="400px" colspan="2" class="sdss3">Sloan Digital Sky Survey</td>
+            </tr>
+            <tr>
+              <td width="200px" class="bigsitetitle">SkyServer</td>
+              <td width="200px" class="sitename">DR16 &nbsp;<img src="../../images/flag_us.gif"/></td>
+            </tr>
+          </table>
+        </td>       
+
+        <td >
+            <img alt="" src="../images/imageright2.png" />
+        </td>
+        <td width="400px">
+            
+                    
+ <script type="text/javascript">
+     function keystone_login(logout) {
+         if (logout) {
+             window.location.href = "../HandleKeystone.aspx";
+         }
+         else {
+             //window.location.href = "http://apps.sciserver.org/login-portal/Account/Login?callbackUrl=http://skyserver.sdss.org/dr16/en/exception/ErrorPage.aspx?P=10748966541594732544&F=935&submit1=Get+Spectrum";
+             window.location.href = "http://apps.sciserver.org/login-portal/Account/Login?callbackUrl=http://skyserver.sdss.org%2fdr16%2fen%2fexception%2fErrorPage.aspx";
+             //alert(window.location.href);
+             }
+         }
+    </script>
+  <div  style="height: 110px; width: 250px;   position:absolute;    right:0;    top:0;    background-color: rgba(0,33,66,0.5);	  border-radius:5px; z-index:1000;">	
+     <div>
+		<img src="../images/sciserverlogo.png"  style="max-width: 95%;margin: 2%;" />
+	</div>
+	<div style="margin: 0;background-color:transparent;">
+		<asp:Div style="float:left; padding:5px 15px;font-family:sans-serif;color:#eee" id="sc1s3rv3r_uname" >
+<!--        <asp:Div id="sc1s3rv3r_uname" class="headerAlert">-->
+            Not logged in
+		</asp:Div>
+		<asp:Div style="float:right; background-color:#eee;margin-right:10px;border-radius:5px;border:solid 1px #444;padding:5px;">
+            <asp:a style="font-weight:bold;font-family:sans-serif;color:#003366" id="sc1s3rv3r_login" href="#" onmouseover="this.style.cursor='pointer'"  onclick="keystone_login(false);return false;">
+                Login
+	        </asp:a>
+		</asp:Div>
+        <asp:Div style="float:right; background-color:#eee;margin-left:5px;border-radius:5px;border:solid 1px #444;padding:5px;margin-right:8px;">
+            <a style="font-weight:bold;font-family:sans-serif;color:#003366" href="http://www.sciserver.org/support/help/" onmouseover="this.style.cursor='pointer'" target="_blank">
+                Help
+            </a>
+        </asp:Div>
+	</div>
+</div>
+                  
+
+            
+        </td>
+        
+      </tr>
+    </table>
+  </div>
+  <div id="div_nav">
+    <table border="1" cellpadding="0" cellspacing="0" width="100%" style="height:25px;border-collapse:collapse;">
+      <tr bgcolor="#313131" style="height:23px">
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="70px"><a class="navlink" href="../" target="_top" onmouseover="return escape('SkyServer front page')">&nbsp;&nbsp;Home&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="70px"><a class="navlink" href="../tools/" target="_top" onmouseover="return escape('Data mining and visual tools')">&nbsp;&nbsp;Data&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="70px"><a class="navlink" href="../help/browser/browser.aspx" target="_top" onmouseover="return escape('Schema Browser to view SDSS data model')">&nbsp;Schema&nbsp;</a></td>    
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="70px"><a class="navlink" href="../proj/" target="_top" onmouseover="return escape('Activities for K-12 and college students and teachers')">&nbsp;&nbsp;Education&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="85px"><a class="navlink" href="../astro/" target="_top" onmouseover="return escape('Information about astronomy and its history')">&nbsp;&nbsp;Astronomy&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="60px"><a class="navlink" href="../sdss/" target="_top" onmouseover="return escape('Sloan Digital Sky Survey background and credits')">&nbsp;&nbsp;SDSS&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="85px"><a class="navlink" href="http://skyserver.sdss.org/contact/?release=DR16&helpdesk=helpdesk@sdss.org&smtp=mail.pha.jhu.edu&epoHelp=helpdesk@sdss.org&subject=SkyServer+DR16+issue:+&url=http%3a%2f%2fskyserver.sdss.org%2fdr16%2fen%2fexception%2fErrorPage.aspxP%3d10748966541594732544%26F%3d935%26submit1%3dGet%2bSpectrum" target="_top" onmouseover="return escape('SDSS Help Desk contact page')">&nbsp;&nbsp;Contact Us&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="75px"><a class="navlink" href="../help/download/" target="_top" onmouseover="return escape('Download SkyServer tools and papers')">&nbsp;&nbsp;Download&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="85px"><a class="navlink" href="../gsearch.aspx" onmouseover="return escape('Use Google to search this site')">&nbsp;Site Search&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="60px"><a class="navlink" href="../help/" target="_top" onmouseover="return escape('Help pages')">&nbsp;&nbsp;Help&nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" nowrap="nowrap" class="navlink" align="center" width="110px"><a class="navlink" href="../tools/search/UserHistory.aspx" target="_top" onmouseover="return escape('Review SkyServer tools you have used in the past.')">&nbsp;&nbsp;History <i><em><strong><sup>NEW!</sup></strong> </em></i>   &nbsp;&nbsp;</a></td>
+        <td style="border:1px solid black" width="*">&nbsp;</td>
+      </tr>            
+    </table>
+  </div>  
+
+  
+ <div class="content">
+     <h2>An error has occurred in Skyserver</h2>
+    
+    <div style="color: yellow; font-weight: bold">
+        Cannot find table 0.
+    </div>
+     
+
+<br>
+<br> 
+         <form method ="POST" target="_blank" name="bugreportform" action="http://www.sciserver.org/support/bug-report-and-suggestion-form/" >
+         
+         <input type="hidden" name="popz_username" id="popz_username" value="" /><input type="hidden" name="popz_bugreport" id="popz_bugreport" value="qwdeef" /><input type="hidden" name="popz_userid" id="popz_userid" value="" /><input type="hidden" name="popz_ClientIP" id="popz_ClientIP" value="35.148.42.159" /><input type="hidden" name="popz_pageurl" id="popz_pageurl" value="http://skyserver.sdss.org/dr16/en/get/SpecByPF.ashx?P=10748966541594732544&F=935&submit1=Get+Spectrum" /><input type="hidden" name="popz_referrer" id="popz_referrer" value="" /><input type="hidden" name="popz_ErrorMessage" id="popz_ErrorMessage" value="Cannot find table 0." /><input type="hidden" name="popz_StackTrace" id="popz_StackTrace" value="at System.Data.DataTableCollection.get_Item(Int32 index)
+   at SkyServer.Get.SpecByPF.ProcessRequest(HttpContext context) in C:\www\preprod.skyserver.sdss.org\current\dr16\SkyServer\en\get\SpecByPF.ashx.cs:line 34
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)" /><input type="hidden" name="popz_InnerTrace" id="popz_InnerTrace" value="" /><input type="hidden" name="popz_ErrorTime" id="popz_ErrorTime" value="2/20/2024 11:07:12 PM -05:00" />
+
+         <input id="submit" type="submit" value="Click to Report Error">
+
+         </form>
+
+    <p>
+      or inform helpdesk@sdss.org<br />
+    </p>
+
+ </div>    
+
+
+  <script language="JavaScript" type="text/javascript" src="../wz_tooltip.js"></script>
+
+</body>
+
+</html>
