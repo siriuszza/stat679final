@@ -88,7 +88,8 @@ They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszz
 
 
 # Methods
+We plan to employ both Deep Neural Networks (DNNs) and statistical models for object classification within the Sloan Digital Sky Survey (SDSS). For image classification, we have selected several DNN candidates based on their proven performance: ResNet, which supports very deep networks through its residual structure; VGG, which utilizes small-sized convolutional kernels (3x3) and pooling layers; and ResNeSt, which enhances the ResNet architecture by introducing a split-attention mechanism. Regarding statistical models, we intend to use either classification trees or logistic regression models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
 
 # Contribution
-Our workload is distributed equally in this project. We are going to preprocess the data together by merging and visualizing. As mentioned before, each of us will be responsible to complete one of the separate models with proper tuning and validation. After training the separate models, we will merge the models by combining their results through weighted average or regression to produce a final model with better accuracy expected.
+The workload for this project will be equally distributed among us. We will collaboratively preprocess the data by merging and visualizing it. As outlined, one team member will be tasked with developing the statistical models, while another will focus on constructing and fine-tuning the DNN models. Following the training of these separate models, we will integrate their outcomes using techniques such as weighted averaging or regression to create a final model. This combined model is expected to achieve enhanced accuracy, leveraging the strengths of both deep learning and statistical approaches.
 
