@@ -3,7 +3,7 @@ title: "**STAT 679 Final Project Proposal**"
 author:
    - Xiaoyang Wang
    - Ziang Zeng
-geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm"
+geometry: "left=1cm,right=1cm,top=1cm,bottom=1cm"
 classoption: twocolumn
 output:
   pdf_document:
@@ -12,6 +12,7 @@ header-includes:
   - \usepackage{booktabs}
   - \usepackage{bm}
   - \usepackage{extarrows}
+  - \usepackage{nopageno}
 ---
 
 
@@ -25,18 +26,23 @@ Our research focuses on classifying celestial objects into stars, galaxies or qu
 
 The central question of our research is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?"
 
+
 # Data
 We plan to work with the astronomy dataset containing three types of data: 
 
 1. Image of the celestial objects:
 
-\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/STAR/STAR_1.jpg) \quad ![](./data/QSO/QSO_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg)
+\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) \quad ![](./data/STAR/STAR_2.jpg)
+
+\quad ![](./data/GALAXY/GALAXY_3.jpg) \quad ![](./data/GALAXY/GALAXY_4.jpg) \quad ![](./data/QSO/QSO_1.jpg) \quad ![](./data/QSO/QSO_2.jpg)
 
 2. Image of the spectra of the celestial objects.
 
 \quad ![](./data/GALAXY_spec/GALAXY_spectrum_1.jpg){width=45%}
 
 3. Metadata of the celestial objects, whose variables are as follows:
+
+
 
 ```{r results='asis'}
 df = read.csv("./data/sdss_dr16.csv")
@@ -74,18 +80,6 @@ kable(tab_exp, format = "latex",
 
 
 They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszza/stat679final/tree/main/data).
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Methods
 We plan to employ both Deep Neural Networks (DNNs) and statistical models for object classification within the Sloan Digital Sky Survey (SDSS). For image classification, we have selected several DNN candidates based on their proven performance: ResNet, which supports very deep networks through its residual structure; VGG, which utilizes small-sized convolutional kernels (3x3) and pooling layers; and ResNeSt, which enhances the ResNet architecture by introducing a split-attention mechanism. Regarding statistical models, we intend to use either classification trees or logistic regression models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
