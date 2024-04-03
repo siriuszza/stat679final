@@ -4,7 +4,7 @@ author:
    - Xiaoyang Wang
    - Ziang Zeng
 geometry: "left=1cm,right=1cm,top=1cm,bottom=1cm"
-# classoption: twocolumn
+classoption: twocolumn
 output:
   pdf_document:
     number_sections: yes
@@ -32,7 +32,7 @@ We plan to work with the astronomy dataset containing three types of data:
 
 1. Image of the celestial objects:
 
-\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) \quad ![](./data/STAR/STAR_2.jpg)
+\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) 
 
 \quad ![](./data/GALAXY/GALAXY_3.jpg) \quad ![](./data/GALAXY/GALAXY_4.jpg) \quad ![](./data/QSO/QSO_1.jpg) \quad ![](./data/QSO/QSO_2.jpg)
 
@@ -82,6 +82,53 @@ kable(tab_exp, format = "latex",
 They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszza/stat679final/tree/main/data).
 
 # EDA
+```{r}
+library(tidyverse)
+
+ggplot(df) +
+  geom_bar(aes(x = class, fill = class))
+```
+
+```{r}
+ggplot(df) +
+  geom_point(aes(x = ra, y = dec, color = class),
+             alpha = 0.1)
+```
+
+```{r}
+library(ggridges)
+
+ggplot(df) + 
+  geom_density_ridges(aes(x = redshift, 
+                          y = class, 
+                          fill = class))
+```
+
+
+```{r}
+df = df %>%
+  mutate(class = case_when(
+    class == "STAR" ~ 1,
+    class == "GALAXY" ~ 2,
+    class == "QSO" ~ 3
+  ))
+
+```
+
+
+```{r}
+library(corrplot)
+corr = cor(df %>% select(-rerun))
+corrplot(corr)
+```
+
+
+```{r, message=F}
+library(VIM)
+aggr(df,prop=FALSE,numbers=TRUE)
+```
+
+
 
 
 # Methods
