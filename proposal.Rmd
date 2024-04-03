@@ -45,7 +45,7 @@ We plan to work with the astronomy dataset containing three types of data:
 
 
 ```{r results='asis'}
-df = read.csv("./data/sdss_dr16.csv")
+df = read.csv("./data/sdss_dr16_clean.csv")[,-20]
 vars = colnames(df)
 explanations = c("Object Identifier",
                  "Right Ascension angle (at J2000 epoch)",

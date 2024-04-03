@@ -1,13 +1,16 @@
 # The named file below is output from fv
 library(magick)
 
-df = read.csv("./stat679final/data/sdss_dr16.csv",
+df = read.csv("./data/sdss_dr16.csv",
               stringsAsFactors=FALSE,
               header = F)[-1,]
 colnames(df) = df[1,]
 df = df[-1,]
 df$ra = as.numeric(df$ra)
 df$dec = as.numeric(df$dec)
+
+write.csv(df, "./data/sdss_dr16_clean.csv", row.names = F)
+
 # df$subclass = trimws(df$subclass, which="right")
 
 # df$plateid = as.numeric(df$plateid)
