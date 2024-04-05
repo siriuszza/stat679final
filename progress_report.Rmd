@@ -44,6 +44,10 @@ We plan to work with the astronomy dataset containing three types of data:
 3. Metadata of the celestial objects, whose variables are as follows:
 
 ```{r results='asis'}
+library(ggthemes)
+library(tidyverse)
+library(kableExtra)
+library(VIM)
 df = read.csv("./data/sdss_dr16_clean.csv")[,-20]
 vars = colnames(df)
 explanations = c("Object Identifier",
@@ -67,8 +71,22 @@ explanations = c("Object Identifier",
                  "Plate ID")
 
 tab_exp = data.frame(vars, explanations)
+mytheme <- theme(plot.title=element_text(face="bold.italic",
+                                         size="14", color="brown"),
+                 axis.title=element_text(face="bold.italic",
+                                         size=10, color="brown"),
+                 axis.text=element_text(face="bold", size=9,
+                                        color="darkblue"),
+                 panel.background=element_rect(fill="white",
+                                               color="darkblue"),
+                 panel.grid.major.y=element_line(color="grey",
+                                                 linetype=1),
+                 panel.grid.minor.y=element_line(color="grey",
+                                                 linetype=2),
+                 panel.grid.minor.x=element_blank(),
+                 legend.position="right") 
 
-library(kableExtra)
+
 names(tab_exp) <- sapply(names(tab_exp), function(x) paste0("\\textbf{\\normalsize ", x, "}"))
 
 kable(tab_exp, format = "latex", 
@@ -87,7 +105,6 @@ df[df == -9999] = NA
 ```
 
 ```{r fig.cap="Missing Value Detection"}
-library(VIM)
 aggr(df, prop=FALSE, numbers=TRUE)
 ```
 
@@ -100,12 +117,11 @@ Figure 4 gives the spread of stellar across the universe. The x-axis is right as
 Figure 5 gives the correlationship between varibales. There are some variables that have strong correlationships.
 
 ```{r fig.cap="Boxplot"}
-library(tidyverse)
 df_long = gather(df, key = "variable", value = "value", u, g, r, i, z, redshift) 
 
 ggplot(df_long, aes(x = variable, y = value, col = class)) +
   geom_boxplot(alpha = 0.5) +
-  labs(x = "Variable", y = "Value")
+  labs(x = "Variable", y = "Value")+mytheme
 ```
 
 ```{r}
@@ -122,7 +138,7 @@ df[, c(4:8, 15)] = completed_data
 library(tidyverse)
 
 ggplot(df) +
-  geom_bar(aes(x = class, fill = class))
+  geom_bar(aes(x = class, fill = class))+mytheme
 ```
 
 ```{r fig.cap="Spread of Stellars"}
@@ -131,7 +147,7 @@ ggplot(df) +
              alpha = 0.025) + 
   labs(x = "Right Ascension",
        y = "Declination")+
-  guides(color = guide_legend(override.aes = list(alpha = 1))) 
+  guides(color = guide_legend(override.aes = list(alpha = 1))) + mytheme
 ```
 
 ```{r fig.cap="Correlation"}
@@ -151,15 +167,122 @@ corrplot(corr)
 
 
 # Methods
-We plan to employ both Deep Neural Networks (DNNs) and statistical models for object classification within the Sloan Digital Sky Survey (SDSS). For image classification, we have selected several DNN candidates based on their proven performance: ResNet, which supports very deep networks through its residual structure; VGG, which utilizes small-sized convolutional kernels (3x3) and pooling layers; and ResNeSt, which enhances the ResNet architecture by introducing a split-attention mechanism. 
-
-Regarding statistical models, we intend to use either classification trees or logistic regression models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
+Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of NN in this problem. This CNN is quit shallow (337k parameters) with two convolutional layers and a maxpooling in between and followed by three fully connected layers.The competitor is VGG16 which is a much deeper NN with 13 convoluntional layers and 3 fully connected layers(138million parameters).
+\quad ![](./data/simple_cnn_visualization.png){width=45%}
 
 # Results
+## CNN
+The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2%(SGD)91.8%(Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. 
+The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models.
+With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time. 
 
+```{r fig.cap='loss curves'}
+library(ggplot2)
+library(dplyr)
+
+# Manually create a data frame for Simple CNN and VGG16 losses
+# Assuming each 'block' is 200 iterations
+simple_cnn <- data.frame(
+  Model = "Simple CNN",
+  Iteration = 1:60,
+  Loss = c(1.094, 1.015, 0.678, 0.615, 0.595, 0.541, 0.444, 0.366, 0.357, 0.350, 
+            0.338, 0.338, 0.346, 0.327, 0.301, 0.319, 0.301, 0.307, 0.297, 0.286,
+            0.299, 0.285, 0.285, 0.277, 0.279, 0.270, 0.274, 0.277, 0.269, 0.266,
+            0.258, 0.258, 0.260, 0.261, 0.259, 0.264, 0.262, 0.248, 0.247, 0.241,
+            0.252, 0.245, 0.247, 0.249, 0.240, 0.245, 0.240, 0.237, 0.233, 0.244,
+            0.241, 0.243, 0.234, 0.225, 0.230, 0.238, 0.222, 0.226, 0.239, 0.237)
+)
+
+vgg16 <- data.frame(
+  Model = "VGG16",
+  Iteration = 1:30,
+  Loss = c(0.997, 0.313, 0.245, 0.257, 0.229, 0.219, 0.249, 0.207, 0.204, 0.243,
+            0.207, 0.201, 0.218, 0.188, 0.194, 0.219, 0.185, 0.180, 0.204, 0.184,
+            0.181, 0.204, 0.178, 0.222, 0.216, 0.189, 0.179, 0.208, 0.171, 0.176)
+)
+
+# Combine the two datasets
+loss_data <- rbind(simple_cnn, vgg16)
+
+# Now plot using ggplot2
+ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
+  geom_line() + 
+  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
+  theme_minimal() +
+  labs(title = "Loss Curves", x = "Iteration", y = "Loss", color = "Model") +
+  mytheme
+```
+
+
+## Statistical Model
+
+Regarding statistical models, we intend to use either classification trees KNN or logistic regression models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
+```{r}
+df_loges = df %>% select(g,r,i,z,redshift,class)
+#summary(df_loges)
+# loge_model = glm(class~.,family = )
+library(caret)
+
+set.seed(679) # For reproducibility
+splitIndex <- createDataPartition(df_loges$class, p = 0.8, list = FALSE)
+trainData <- df_loges[splitIndex, ]
+testData <- df_loges[-splitIndex, ]
+
+library(rpart)
+
+treeModel <- rpart(class ~ g + r + i + z + redshift, data = trainData, method = "class")
+predTree <- predict(treeModel, testData, type = "class")
+cm_tree <- confusionMatrix(predTree, as.factor(testData$class))
+cm_table <- as.table(cm_tree$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p1 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Confusion Matrix of Tree", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+```
+
+```{r fig.cap='Confusion Matrix'}
+library(class)
+trainDataScaled <- scale(trainData[,-6]) # Assuming 'class' is the last column
+testDataScaled <- scale(testData[,-6], center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
+
+knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 5)
+cm_knn <- confusionMatrix(knnModel, as.factor(testData$class))
+cm_table <- as.table(cm_knn$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Confusion Matrix of KNN", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+gridExtra::grid.arrange(p1,p2,nrow=2)
+```
+
+```{r}
+# Extract statistics from confusion matrix
+stats_tree <- cm_tree$overall
+stats_knn <- cm_knn$overall
+# Convert to dataframe
+stats_df <- data.frame(Statistic = names(stats_tree), Tree = as.vector(stats_tree),KNN = as.vector(stats_knn))
+
+# Render table with knitr::kable()
+kable(stats_df, caption = "Statistics from Confusion Matrix", align = 'c',digits = 5)
+
+```
+
+From the confusion matrix and statistics, we see a success in building model through the numerical data. By using several index and the red shift, our simple models reach more than 96% accuracy on validation data.
 
 # Future Work
-The next steps are clear. We will first finish the rest models: DNN for spectrum and classification model for metadata. Then, we will combine those three models with voting classifier to gain a better classification result.
+The next steps are clear. We will first finish the rest models: DNN for spectrum and find better classification model for metadata. Then, we will combine those three models with voting classifier to gain a better classification result.
 
 
 
