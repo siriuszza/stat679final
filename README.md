@@ -1,5 +1,5 @@
 # stat679final
-This is a project using sdss/dr17(https://skyserver.sdss.org/dr17/) data to do classification based on image and sepctra info.
+This is a project using sdss/dr17(https://skyserver.sdss.org/dr16/) data to do classification based on image and sepctra info.
 
 Using SQL to get metadata:
 
