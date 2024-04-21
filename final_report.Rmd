@@ -54,7 +54,9 @@ library(ggthemes)
 library(tidyverse)
 library(kableExtra)
 library(VIM)
-df = read.csv("./data/sdss_dr16_clean.csv")[,-20]
+df = read.csv("./data/sdss_dr16_clean.csv")[, -20]
+# rnk = df[,20]
+# df = df[, -20]
 vars = colnames(df)
 explanations = c("Object Identifier",
                  "Right Ascension angle (at J2000 epoch)",
@@ -152,9 +154,9 @@ ggplot(df) +
 ```{r fig.cap="Correlation", fig.height=6}
 df = df %>%
   mutate(class = case_when(
-    class == "STAR" ~ 1,
-    class == "GALAXY" ~ 2,
-    class == "QSO" ~ 3
+    class == "STAR" ~ 0,
+    class == "GALAXY" ~ 1,
+    class == "QSO" ~ 2
   ))
 
 library(corrplot)
@@ -191,9 +193,12 @@ Figure 4: Structure of CNN
 Regarding statistical models, we intend to use either classification trees, or KNN models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
 
 ```{r}
-df_loges = df %>% select(g,r,i,z,redshift,class)
-#summary(df_loges)
-# loge_model = glm(class~.,family = )
+df_loges = df %>% select(u, g, r, i, z,
+                         redshift,
+                         class)
+```
+
+```{r}
 library(caret)
 
 set.seed(679) # For reproducibility
@@ -201,9 +206,16 @@ splitIndex <- createDataPartition(df_loges$class, p = 0.8, list = FALSE)
 trainData <- df_loges[splitIndex, ]
 testData <- df_loges[-splitIndex, ]
 
+# rnk_stars = testData %>% group_by(class) %>% 
+#   summarise(rnk = rnk) %>% 
+#   mutate(image = paste0("./data/", class, "/", class, "_", rnk, ".jpg"),
+#          spec = paste0("./data/", class, "_spec",
+#                        "/", class, "_", "spectrum_", rnk, ".jpg")
+#          )
+
 library(rpart)
 
-treeModel <- rpart(class ~ g + r + i + z + redshift, data = trainData, method = "class")
+treeModel <- rpart(class ~ ., data = trainData, method = "class")
 predTree <- predict(treeModel, testData, type = "class")
 cm_tree <- confusionMatrix(predTree, as.factor(testData$class))
 cm_table <- as.table(cm_tree$table)
@@ -216,15 +228,16 @@ p1 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_text(aes(label = Freq), vjust = 1) +
   labs(title = "Confusion Matrix of Tree", x = "Actual Class", y = "Predicted Class") +
   mytheme
-
 ```
 
 ```{r fig.cap='Confusion Matrix'}
 library(class)
-trainDataScaled <- scale(trainData[,-6]) # Assuming 'class' is the last column
-testDataScaled <- scale(testData[,-6], center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
+trainDataScaled <- scale(trainData[,-7]) # Assuming 'class' is the last column
+testDataScaled <- scale(testData[,-7], 
+                        center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
 
-knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 5)
+knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 3)
+
 cm_knn <- confusionMatrix(knnModel, as.factor(testData$class))
 cm_table <- as.table(cm_knn$table)
 cm_df <- as.data.frame(cm_table)
@@ -238,7 +251,12 @@ p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   mytheme
 
 gridExtra::grid.arrange(p1,p2,nrow=2)
+
+sum(knnModel == testData$class) / nrow(testData)
 ```
+
+
+
 
 ```{r results='asis'}
 # Extract statistics from confusion matrix
