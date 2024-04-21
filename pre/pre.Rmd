@@ -123,6 +123,7 @@ kable(tab_exp, format = "latex",
 \end{center}
 
 ## kNN
+k = 3
 
 ## Decision Tree
 
