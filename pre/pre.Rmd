@@ -1,0 +1,133 @@
+---
+title: "Celestial Object Classification"
+author: 
+  - Xiaoyang Wang
+  - Ziang Zeng
+output: 
+  beamer_presentation:
+    # toc: true
+    slide_level: 2
+    theme: "Madrid"
+    # colortheme: "whale"
+    citation_package: natbib
+bibliography: ./references.bib
+biblio-style: unsrt
+biblio-title: References
+header-includes:
+  - \usepackage{bm}
+  - \usepackage{booktabs}
+#   - \setbeamertemplate{bibliography item}[text]
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = F,
+                      warning = F)
+```
+
+## Outline
+
+\tableofcontents
+
+# Astronomical Challenge
+Classifying celestial objects into stars, galaxies or quasars using their spectral characteristics.
+
+# Data & Preprocessing
+## Image of the celestial objects
+
+\begin{figure}
+\centering
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/GALAXY/GALAXY_1.jpg}
+  \caption{Galaxy}
+\end{minipage}\hfill
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/STAR/STAR_1.jpg}
+  \caption{Star}
+\end{minipage}\hfill
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/QSO/QSO_1.jpg}
+  \caption{Qusar}
+\end{minipage}
+\end{figure}
+
+## Image of the spectra
+
+\begin{figure}
+\centering
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/GALAXY_spec/GALAXY_spectrum_1.jpg}
+  \caption{Galaxy Spec}
+\end{minipage}\hfill
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/STAR_spec/STAR_spectrum_1.jpg}
+  \caption{Star Spec}
+\end{minipage}\hfill
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/QSO_spec/QSO_spectrum_1.jpg}
+  \caption{Qusar Spec}
+\end{minipage}
+\end{figure}
+
+
+## Metadata
+```{r results='asis'}
+library(tidyverse)
+library(kableExtra)
+
+df = read.csv("../data/sdss_dr16_clean.csv")[,-20]
+vars = colnames(df)[c(-1, -18, -19)]
+explanations = c("Right Ascension angle (at J2000 epoch)",
+                 "Declination angle (at J2000 epoch)",
+                 "Ultraviolet filter",
+                 "Green filter",
+                 "Red filter",
+                 "Near Infrared filter",
+                 "Infrared filter",
+                 "Run Number",
+                 "Rerun Number",
+                 "Camera column",
+                 "Field number",
+                 "Unique ID used for optical spectroscopic objects",
+                 "Object class",
+                 "Redshift value based on the increase in wavelength",
+                 "Plate",
+                 "Modified Julian Date")
+
+tab_exp = data.frame(vars, explanations)
+
+kable(tab_exp, format = "latex", 
+      booktabs = TRUE,
+      caption = "Metadata of the celestial objects") %>%
+  kable_styling(full_width = F, position = "center", font_size = 7)
+```
+
+## EDA
+- Missing Values: 3
+
+- Samples for each catagory: 33333
+
+# Methodology
+## Convonlusional Neural Network
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../data/simple_cnn_visualization.png}
+\end{center}
+
+## kNN
+
+## Decision Tree
+
+## Voting Classifier
+
+# Results
+
+# Conclusions

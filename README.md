@@ -5,12 +5,13 @@ Using SQL to get metadata:
 
 ```
 SELECT TOP 100000
-p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,
-p.run, p.rerun, p.camcol, p.field,
-s.specobjid, s.class, s.z as redshift,
-s.plate, s.mjd, s.fiberid,s.plateid
+  p.objid, p.ra, p.dec, p.u, p.g, p.r, p.i, p.z,
+  p.run, p.rerun, p.camcol, p.field,
+  s.specobjid, s.class, s.z AS redshift,
+  s.plate, s.mjd, s.fiberid, s.plateid
 FROM PhotoObj AS p
-JOIN SpecObj AS s ON s.bestobjid = p.objid
+JOIN SpecObj AS s 
+ON s.bestobjid = p.objid
 WHERE 
   p.u BETWEEN 0 AND 19.6
   AND g BETWEEN 0 AND 20
