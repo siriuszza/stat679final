@@ -54,9 +54,8 @@ library(ggthemes)
 library(tidyverse)
 library(kableExtra)
 library(VIM)
-df = read.csv("./data/sdss_dr16_clean.csv")[, -20]
-# rnk = df[,20]
-# df = df[, -20]
+df = read.csv("./data/metadata/clean_data.csv")[, -20]
+
 vars = colnames(df)
 explanations = c("Object Identifier",
                  "Right Ascension angle (at J2000 epoch)",
@@ -109,35 +108,18 @@ They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszz
 # EDA
 First we will check and deal with missing values in the dataset. There are 1 missing value for **i** and 3 for **z**. Then from Figure 1, we can see that **i** and **z** are quite scattered. So, we use regression imputation to impute the missing values.
 
-```{r}
-df[df == -9999] = NA
-```
-
-```{r eval = F}
-aggr(df, prop=FALSE, numbers=TRUE)
-```
-
 Next, we give several visualizations to better understand the data. Figure 2 gives the spread of the celestial objects (galaxies, quasars, stars) across the universe. The x-axis is right ascension angle (at J2000 epoch), and the y-axis is declination angle (at J2000 epoch). We can see some interesting patterns, but it is unclear for classification.
 
 Figure 3 gives the correlationship between varibales. There are some variables that have strong correlationships.
 
 ```{r fig.cap="Boxplot"}
-df_long = gather(df, key = "variable", value = "value", u, g, r, i, z, redshift) 
+df_org = read.csv("./data/metadata/org_metadata.csv")
+df_org[df_org == -9999] = NA
+df_long = gather(df_org, key = "variable", value = "value", u, g, r, i, z, redshift) 
 
 ggplot(df_long, aes(x = variable, y = value, col = class)) +
   geom_boxplot(alpha = 0.5) +
   labs(x = "Variable", y = "Value")+mytheme
-```
-
-```{r}
-library(mice)
-
-df_num = df %>% 
-  select(u, g, r, i, z, redshift)
-
-imputed_data = mice(df_num, method = "norm.predict", m=1, maxit=10, print=F)
-completed_data = complete(imputed_data)
-df[, c(4:8, 15)] = completed_data
 ```
 
 \newpage
@@ -152,13 +134,6 @@ ggplot(df) +
 ```
 
 ```{r fig.cap="Correlation", fig.height=6}
-df = df %>%
-  mutate(class = case_when(
-    class == "STAR" ~ 0,
-    class == "GALAXY" ~ 1,
-    class == "QSO" ~ 2
-  ))
-
 library(corrplot)
 corr = cor(df %>% select(-rerun))
 corrplot(corr)
@@ -207,17 +182,8 @@ df_loges = df %>% select(u, g, r, i, z,
 ```{r}
 library(caret)
 
-set.seed(679) # For reproducibility
-splitIndex <- createDataPartition(df_loges$class, p = 0.8, list = FALSE)
-trainData <- df_loges[splitIndex, ]
-testData <- df_loges[-splitIndex, ]
-
-# rnk_stars = testData %>% group_by(class) %>% 
-#   summarise(rnk = rnk) %>% 
-#   mutate(image = paste0("./data/", class, "/", class, "_", rnk, ".jpg"),
-#          spec = paste0("./data/", class, "_spec",
-#                        "/", class, "_", "spectrum_", rnk, ".jpg")
-#          )
+trainData <- read.csv("./data/metadata/train_metadata.csv")
+testData <- read.csv("./data/metadata/test_metadata.csv")
 
 library(rpart)
 
