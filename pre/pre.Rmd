@@ -27,6 +27,28 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = F)
 ```
 
+```{r}
+library(ggthemes)
+library(tidyverse)
+library(kableExtra)
+
+mytheme <- theme(plot.title=element_text(face="bold.italic",
+                                         size="14", color="brown"),
+                 axis.title=element_text(face="bold.italic",
+                                         size=10, color="brown"),
+                 axis.text=element_text(face="bold", size=9,
+                                        color="darkblue"),
+                 panel.background=element_rect(fill="white",
+                                               color="darkblue"),
+                 panel.grid.major.y=element_line(color="grey",
+                                                 linetype=1),
+                 panel.grid.minor.y=element_line(color="grey",
+                                                 linetype=2),
+                 panel.grid.minor.x=element_blank(),
+                 legend.position="right") 
+```
+
+
 ## Outline
 
 \tableofcontents
@@ -80,10 +102,7 @@ Classifying celestial objects into stars, galaxies or quasars using their spectr
 
 ## Metadata
 ```{r results='asis'}
-library(tidyverse)
-library(kableExtra)
-
-df = read.csv("../data/sdss_dr16_clean.csv")[,-20]
+df = read.csv("../data/metadata/clean_data.csv")[,-20]
 vars = colnames(df)[c(-1, -18, -19)]
 explanations = c("Right Ascension angle (at J2000 epoch)",
                  "Declination angle (at J2000 epoch)",
@@ -116,19 +135,98 @@ kable(tab_exp, format = "latex",
 - Samples for each catagory: 33333
 
 # Methodology
+## Meta Data
+- Explanatory Variables: u, g, r, i, z, redshift
+
+- Response Variable: class
+  - STAR: 0
+  - GALAXY: 1
+  - QSO: 2
+  
+- kNN: k = 3
+
+- Decision Tree
+
 ## Convonlusional Neural Network
 
-\begin{center}
-    \includegraphics[width=0.4\textwidth]{../data/simple_cnn_visualization.png}
-\end{center}
-
-## kNN
-k = 3
-
-## Decision Tree
+\begin{figure}
+\centering
+\begin{minipage}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{../data/simple_cnn_visualization.png}
+  \caption{a}
+\end{minipage}
+\end{figure}
 
 ## Voting Classifier
 
+\begin{figure}
+\centering
+\begin{minipage}{0.6\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{./images/voting.png}
+  \caption{b}
+\end{minipage}
+\end{figure}
+
+
 # Results
+## Metadata
+```{r}
+library(caret)
+trainData <- read.csv("../data/metadata/train_metadata.csv")
+testData <- read.csv("../data/metadata/test_metadata.csv")
+```
+
+
+```{r fig.cap='Confusion Matrix of Decision Tree', fig.height=5}
+library(rpart)
+
+treeModel <- rpart(class ~ ., data = trainData, method = "class")
+predTree <- predict(treeModel, testData, type = "class")
+cm_tree <- confusionMatrix(predTree, as.factor(testData$class))
+cm_table <- as.table(cm_tree$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p1 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Confusion Matrix of Tree", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+p1
+```
+
+## Metadata
+```{r fig.cap='Confusion Matrix of kNN', fig.height=5}
+library(class)
+trainDataScaled <- scale(trainData[,-7]) # Assuming 'class' is the last column
+testDataScaled <- scale(testData[,-7], 
+                        center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
+
+knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 3)
+
+cm_knn <- confusionMatrix(knnModel, as.factor(testData$class))
+cm_table <- as.table(cm_knn$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Confusion Matrix of KNN", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+p2
+```
+
+## Image of the celestial objects
+
+
+## Image of the spectra
+
 
 # Conclusions
