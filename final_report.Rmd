@@ -282,7 +282,7 @@ vgg16 <- data.frame(
 
 SimpleCNN_SGD_spec <- data.frame(
   Model = "SimpleCNN_SGD_spec",
-  Iteration = 1:60,
+  Iteration = 1:50,
   Loss = c(1.086, 0.778, 0.307, 0.232, 0.192, 
                  0.151, 0.131, 0.124, 0.105, 0.100, 
                  0.088, 0.075, 0.072, 0.069, 0.067, 
