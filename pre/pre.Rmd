@@ -25,6 +25,7 @@ header-includes:
 knitr::opts_chunk$set(echo = FALSE,
                       message = F,
                       warning = F)
+library(reticulate)
 ```
 
 ```{r}
@@ -147,31 +148,99 @@ kable(tab_exp, format = "latex",
 
 - Decision Tree
 
-## Convonlusional Neural Network
+- Logistic Regression
 
-\begin{figure}
-\centering
-\begin{minipage}{0.3\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{../data/simple_cnn_visualization.png}
-  \caption{a}
-\end{minipage}
-\end{figure}
+## Images
+
+\begin{columns}[T] 
+
+\begin{column}{0.5\textwidth}
+   \includegraphics[width=0.8\textwidth]{../data/simple_cnn_visualization.png}
+\end{column}
+
+\begin{column}{0.5\textwidth} 
+\begin{itemize}
+\item Concepts:
+  \begin{itemize}
+  \item Origin: 0 interior edge
+  \item Edge
+  \item Orthant (\(n - 2\) dimension)
+  \end{itemize}
+\item Construction:  
+
+  Taking one \(n - 2\) dimensional orthant for each of the \( (2n - 3)!! \) possible binary trees, and gluing them together along their common faces. Then we will get the BHV tree space \(\mathcal{T}_n\).
+\end{itemize}
+
+\end{column}
+
+\end{columns}
+
 
 ## Voting Classifier
+\begin{columns}[T] 
 
-\begin{figure}
-\centering
-\begin{minipage}{0.6\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{./images/voting.png}
-  \caption{b}
-\end{minipage}
-\end{figure}
+\begin{column}{0.5\textwidth}
+   \includegraphics[width=0.8\textwidth]{./images/voting.png}
+\end{column}
 
+\begin{column}{0.5\textwidth} 
+\begin{itemize}
+\item Concepts:
+  \begin{itemize}
+  \item Origin: 0 interior edge
+  \item Edge
+  \item Orthant (\(n - 2\) dimension)
+  \end{itemize}
+\item Construction:  
+
+  Taking one \(n - 2\) dimensional orthant for each of the \( (2n - 3)!! \) possible binary trees, and gluing them together along their common faces. Then we will get the BHV tree space \(\mathcal{T}_n\).
+\end{itemize}
+
+\end{column}
+
+\end{columns}
 
 # Results
 ## Metadata
+```{python results='hide'}
+from sklearn.ensemble import VotingClassifier
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+from sklearn import preprocessing
+import pandas as pd
+
+# Load dataset
+df_train = pd.read_csv("../data/metadata/train_metadata.csv")
+df_test = pd.read_csv("../data/metadata/test_metadata.csv")
+X_train, y_train = df_train.iloc[:, 0:6], df_train["class"]
+
+X_test, y_test = df_test.iloc[:, 0:6], df_test["class"]
+
+scaler = preprocessing.StandardScaler().fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Instantiate the individual classifiers
+knn_clf = KNeighborsClassifier(n_neighbors=3)
+tree_clf = DecisionTreeClassifier()
+lr_clf = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=5000)
+
+
+knn_clf.fit(X_train, y_train)
+tree_clf.fit(X_train, y_train)
+lr_clf.fit(X_train, y_train)
+
+knn_pred = knn_clf.predict(X_test)
+tree_pred = tree_clf.predict(X_test)
+lr_pred = lr_clf.predict(X_test)
+```
+
 ```{r}
 library(caret)
 trainData <- read.csv("../data/metadata/train_metadata.csv")
@@ -181,17 +250,20 @@ testData <- read.csv("../data/metadata/test_metadata.csv")
 
 ```{r fig.cap='Confusion Matrix of Decision Tree', fig.height=5}
 library(rpart)
+# library(rpart.plot)
+# treeModel <- rpart(class ~ ., data = trainDataScaled, method = "class")
+# predTree <- predict(treeModel, testDataScaled, type = "class")
+# rpart.plot(treeModel)
+# sum(predTree == testData$class) / nrow(testData)
 
-treeModel <- rpart(class ~ ., data = trainData, method = "class")
-predTree <- predict(treeModel, testData, type = "class")
-cm_tree <- confusionMatrix(predTree, as.factor(testData$class))
+cm_tree <- confusionMatrix(as.factor(py$tree_pred), as.factor(testData$class))
 cm_table <- as.table(cm_tree$table)
 cm_df <- as.data.frame(cm_table)
 colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
 
 p1 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
-  scale_fill_gradient(low = "white", high = "blue") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
   labs(title = "Confusion Matrix of Tree", x = "Actual Class", y = "Predicted Class") +
   mytheme
@@ -201,27 +273,62 @@ p1
 
 ## Metadata
 ```{r fig.cap='Confusion Matrix of kNN', fig.height=5}
-library(class)
-trainDataScaled <- scale(trainData[,-7]) # Assuming 'class' is the last column
-testDataScaled <- scale(testData[,-7], 
-                        center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
+# library(class)
+# trainDataScaled <- scale(trainData[,-7]) 
+# 
+# testDataScaled <- scale(testData[,-7], 
+#                         center = attr(trainDataScaled, "scaled:center"), scale = attr(trainDataScaled, "scaled:scale"))
+# 
+# trainDataScaled = as.data.frame(trainDataScaled)
+# testDataScaled = as.data.frame(testDataScaled)
+# trainDataScaled$class = trainData$class
+# testDataScaled$class = testData$class
 
-knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 3)
+# knnModel <- knn(train = trainDataScaled, test = testDataScaled, cl = trainData$class, k = 3)
 
-cm_knn <- confusionMatrix(knnModel, as.factor(testData$class))
+cm_knn <- confusionMatrix(as.factor(py$knn_pred), as.factor(testData$class))
 cm_table <- as.table(cm_knn$table)
 cm_df <- as.data.frame(cm_table)
 colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
 
 p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
-  scale_fill_gradient(low = "white", high = "blue") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
   labs(title = "Confusion Matrix of KNN", x = "Actual Class", y = "Predicted Class") +
   mytheme
 
 p2
 ```
+
+## Metadata
+```{r results='hide'}
+# library(nnet)
+# 
+# trainData$class <- factor(trainData$class)
+# testData$class <- factor(testData$class)
+# 
+# set.seed(7)
+# lr_model <- multinom(class ~ ., data = trainData)
+# pred_lr <- predict(lr_model, newdata = testData)
+
+cm_lr <- confusionMatrix(as.factor(py$lr_pred), as.factor(testData$class))
+cm_table <- as.table(cm_lr$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+```
+
+```{r fig.cap='Confusion Matrix of Logistic Regression', fig.height=5}
+p3 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Confusion Matrix of Logistic Regression", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+p3
+```
+
 
 ## Image of the celestial objects
 
@@ -230,3 +337,7 @@ p2
 
 
 # Conclusions
+
+
+
+
