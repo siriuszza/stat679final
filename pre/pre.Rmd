@@ -199,23 +199,35 @@ SGD with different momentum, Adam, 10 epoch, batch size 64,lr 0.001
 \item Models \(\{C_1,\cdots C_n\}\) 
 \item For a given inputs, \(C_i\) has a prediction\(P_i(y_j | x)\) 
 \item The predict probabilities for voting classifier \(P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)\)
-\item \(The p(x) = \arg \max_{y_j} P(y_j | x)\)
+\item The prediction \( p(x) = \arg \max_{y_j} P(y_j | x)\)
 \end{itemize}
 \item Hard Voting:
 \begin{itemize}
 \item \(p(x) = \text{mode}(p_1(x), p_2(x), \ldots, p_m(x))\), mode identify the most frequent one
 \end{itemize}
-\item Construction:  
-
-The candidate models are KNN, Logistic Regression, Classification Tree, CNN for image and CNN for spectrum image
-
 \end{itemize}
 
 \end{column}
 
 \end{columns}
+\begin{itemize}
+\item Construction:  
 
+The candidate models are KNN, Logistic Regression, Classification Tree, CNN for image and CNN for spectrum image
+
+\end{itemize}
 # Results
+## Metadata
+
+```{r}
+library(rpart)
+library(rpart.plot)
+df_train <- read.csv('../data/metadata/train_metadata.csv')
+r_tree <- rpart(formula = class~.,data = df_train)
+rpart.plot(r_tree)
+```
+
+
 ## Metadata
 ```{python results='hide'}
 from sklearn.ensemble import VotingClassifier
@@ -273,7 +285,7 @@ p1 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "Confusion Matrix of Tree", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "Tree", x = "Actual Class", y = "Predicted Class") +
   mytheme
 
 # p1
@@ -289,7 +301,7 @@ p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "Confusion Matrix of KNN", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "KNN", x = "Actual Class", y = "Predicted Class") +
   mytheme
 
 # p2
@@ -305,7 +317,7 @@ p3 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "Confusion Matrix of Logistic Regression", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "Logistic Regression", x = "Actual Class", y = "Predicted Class") +
   mytheme
 ```
 
@@ -324,7 +336,19 @@ ggarrange(p1,p2,p3, ncol=3,
 ## Voting Classifier
 
 ```{r}
+whole_confusion_matrix <- read.csv("results/pred_results.csv")
+cm_vt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
+cm_table <- as.table(cm_vt$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
 
+p4 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Voting Classifier", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+p4
 ```
 
 
