@@ -27,9 +27,9 @@ write.csv(rnk_test, "./data/rnk_test.csv", row.names = F)
 
 df = df %>%
   mutate(class = case_when(
-    class == "STAR" ~ 0,
-    class == "GALAXY" ~ 1,
-    class == "QSO" ~ 2
+    class == "STAR" ~ 2,
+    class == "GALAXY" ~ 0,
+    class == "QSO" ~ 1
   ))
 
 
