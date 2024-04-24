@@ -55,7 +55,12 @@ mytheme <- theme(plot.title=element_text(face="bold.italic",
 \tableofcontents
 
 # Astronomical Challenge
-Classifying celestial objects into stars, galaxies or quasars using their spectral characteristics.
+Classifying celestial objects into stars, galaxies or quasars.
+
+\begin{center}
+  \includegraphics[width=0.5\textwidth]{./images/intro.png}
+\end{center}
+
 
 # Data & Preprocessing
 ## Images
@@ -160,9 +165,9 @@ corrplot(corr)
   - max_depth: 4
 
 - **Logistic Regression**
-  - C: 0.01
+  - C: 1
   - penalty: l2
-  - $P(Y_i = k) = \frac{e^{\beta_k \cdot X_i}}{\sum_{j = 1}^3 e^{\beta_j \cdot X_i}}$
+  - $P(Y_i = k) = \frac{e^{\beta_k \cdot X_i}}{\sum_{j = 1}^3 e^{\beta_j \cdot X_i}}$, $i = 0, 1, 2$
 
 ## Images
 
@@ -256,7 +261,7 @@ knn_clf = KNeighborsClassifier(n_neighbors = 3)
 tree_clf = DecisionTreeClassifier(max_depth = 4)
 lr_clf = LogisticRegression(multi_class='multinomial', 
 solver='lbfgs', max_iter=2000,
-penalty='l2')
+penalty='l2', C = 1)
 
 
 knn_clf.fit(X_train, y_train)
@@ -268,18 +273,8 @@ tree_pred = tree_clf.predict(X_test)
 lr_pred = lr_clf.predict(X_test)
 ```
 
+
 ```{python results='hide'}
-# Tree
-# plt.figure(figsize=(26,16))
-# plot_tree(tree_clf, filled=True,
-#           feature_names=list(df_train.columns)[0:6],
-#           class_names=["Star", "Galaxy", "Qso"])
-# plt.show()
-from sklearn.tree import export_graphviz
-export_graphviz(tree_clf, out_file='tree.dot', 
-feature_names=list(df_train.columns)[0:6],
-class_names=["Star", "Galaxy", "Qso"],
-rounded=True, filled=True)
 # LR
 coef = lr_clf.coef_
 intercept = lr_clf.intercept_
@@ -368,7 +363,7 @@ ggarrange(p1,p2,p3, ncol=3,
 
 ## Voting Classifier
 
-```{r}
+```{r fig.cap="Confusion Matrix of Voting Classifier", fig.height=5}
 whole_confusion_matrix <- read.csv("results/pred_results.csv")
 cm_vt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
 cm_table <- as.table(cm_vt$table)
@@ -491,7 +486,7 @@ F1 & Galaxy & 95.31\% & 96.56\% & 95.76\% & 0\% & 0\% & 0\%\\
 \end{table}
 
 
-
+\nocite{*}
 
 
 
