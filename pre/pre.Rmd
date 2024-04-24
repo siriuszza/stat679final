@@ -3,7 +3,7 @@ title: "Celestial Object Classification"
 author: 
   - Xiaoyang Wang
   - Ziang Zeng
-output: 
+output:
   beamer_presentation:
     # toc: true
     slide_level: 2
@@ -58,7 +58,7 @@ mytheme <- theme(plot.title=element_text(face="bold.italic",
 Classifying celestial objects into stars, galaxies or quasars using their spectral characteristics.
 
 # Data & Preprocessing
-## Image of the celestial objects
+## Images
 
 \begin{figure}
 \centering
@@ -78,8 +78,6 @@ Classifying celestial objects into stars, galaxies or quasars using their spectr
 \caption{Qusar}
 \end{minipage}
 \end{figure}
-
-## Image of the spectra
 
 \begin{figure}
 \centering
@@ -131,31 +129,40 @@ kable(tab_exp, format = "latex",
 ```
 
 ## EDA
-- Missing Values: 3
-
+- Missing Values:
+  - Metadata: 3, Regression Imputation
+  - Image of Spectra: n
+  
 - Samples for each catagory: 33333
+
+- Correlationship
+
+```{r fig.height=4}
+library(corrplot)
+corr = cor(df %>% select(-rerun))
+corrplot(corr)
+```
+
 
 # Methodology
 ## Meta Data
-- Explanatory Variables: u, g, r, i, z, redshift
+- **Explanatory Variables**: u, g, r, i, z, redshift
 
-- Response Variable: class
-- STAR: 0
-- GALAXY: 1
-- QSO: 2
+- **Response Variable**: class
+  - GALAXY: 0
+  - QSO: 1
+  - STAR: 2
 
-- kNN: k = 3
+- **kNN**: k = 3
 
-- Decision Tree
+- **Decision Tree**:
+  - Gini impurity
+  - max_depth: 4
 
-- Gini impurity, 
-- (para)
-
-- Logistic Regression
-
-- C:0.01
-- penalty: l2
-- iteration:2000
+- **Logistic Regression**
+  - C: 0.01
+  - penalty: l2
+  - $P(Y_i = k) = \frac{e^{\beta_k \cdot X_i}}{\sum_{j = 1}^3 e^{\beta_j \cdot X_i}}$
 
 ## Images
 
@@ -216,24 +223,15 @@ SGD with different momentum, Adam, 10 epoch, batch size 64,lr 0.001
 The candidate models are KNN, Logistic Regression, Classification Tree, CNN for image and CNN for spectrum image
 
 \end{itemize}
+
+
 # Results
-## Metadata
-
-```{r}
-library(rpart)
-library(rpart.plot)
-df_train <- read.csv('../data/metadata/train_metadata.csv')
-r_tree <- rpart(formula = class~.,data = df_train)
-rpart.plot(r_tree)
-```
-
-
 ## Metadata
 ```{python results='hide'}
 from sklearn.ensemble import VotingClassifier
 
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.linear_model import LogisticRegression
 
 from sklearn.model_selection import train_test_split
@@ -254,9 +252,11 @@ X_train = scaler.transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Instantiate the individual classifiers
-knn_clf = KNeighborsClassifier(n_neighbors=3)
-tree_clf = DecisionTreeClassifier()
-lr_clf = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=5000)
+knn_clf = KNeighborsClassifier(n_neighbors = 3)
+tree_clf = DecisionTreeClassifier(max_depth = 4)
+lr_clf = LogisticRegression(multi_class='multinomial', 
+solver='lbfgs', max_iter=2000,
+penalty='l2')
 
 
 knn_clf.fit(X_train, y_train)
@@ -268,13 +268,46 @@ tree_pred = tree_clf.predict(X_test)
 lr_pred = lr_clf.predict(X_test)
 ```
 
+```{python results='hide'}
+# Tree
+# plt.figure(figsize=(26,16))
+# plot_tree(tree_clf, filled=True,
+#           feature_names=list(df_train.columns)[0:6],
+#           class_names=["Star", "Galaxy", "Qso"])
+# plt.show()
+from sklearn.tree import export_graphviz
+export_graphviz(tree_clf, out_file='tree.dot', 
+feature_names=list(df_train.columns)[0:6],
+class_names=["Star", "Galaxy", "Qso"],
+rounded=True, filled=True)
+# LR
+coef = lr_clf.coef_
+intercept = lr_clf.intercept_
+```
+
+- Decision Tree:
+![](./images/decision_tree.png)
+
+- Logistic Regression:
 ```{r}
 library(caret)
 trainData <- read.csv("../data/metadata/train_metadata.csv")
 testData <- read.csv("../data/metadata/test_metadata.csv")
 ```
 
+```{r results='asis'}
+lr_coef = cbind(py$intercept, py$coef)
+colnames(lr_coef) = c("Intercept", colnames(testData)[-7])
+rownames(lr_coef) = c("Galaxy", "Qso", "Star")
 
+kable(lr_coef, format = "latex", 
+      booktabs = TRUE,
+      row.names = T,
+      caption = "Coefficients of Logistic Regression") %>%
+  kable_styling(full_width = F, position = "center", font_size = 7)
+```
+
+## Metadata
 ```{r}
 cm_tree <- confusionMatrix(as.factor(py$tree_pred), as.factor(testData$class))
 cm_table <- as.table(cm_tree$table)
@@ -418,15 +451,17 @@ eval_df = data.frame(
   F1 = c("Galaxy", evals[[3]][,2]),
   f12 = c("Qso", evals[[3]][,3])
 )
+
 colnames(eval_df)[c(4, 6, 7, 9, 10, 12)] = ""
 # t(eval_df) %>% as.data.frame()
 kable(t(eval_df), format = "latex", 
       booktabs = TRUE,
       linesep = c("", "",
-  "\\addlinespace"),
+                  "\\addlinespace"),
       caption = "Evaluation of Models") %>%
   kable_styling(full_width = F, position = "center", font_size = 7)
 ```
+
 
 \begin{table}
 \centering
@@ -440,17 +475,17 @@ Model &  & kNN & DT & LR & CNN & CNN & VC\\
 \midrule
 Accuracy &  & 96.79\% & 97.68\% & 97.04\% & 93.91\% & 99.14\% & 97.8\%\\
 \addlinespace
- & Star & 95.59\% & 99.82\% & 95.95\% & 0\% & 0\% & 0\%\\
+& Star & 95.59\% & 99.82\% & 95.95\% & 0\% & 0\% & 0\%\\
 Precision & Galaxy & 96.01\% & 96.45\% & 96.46\% & 0\% & 0\% & 0\%\\
- & Qso & 98.84\% & 96.8\% & 98.77\% & 0\% & 0\% & 0\%\\
+& Qso & 98.84\% & 96.8\% & 98.77\% & 0\% & 0\% & 0\%\\
 \addlinespace
- & Star & 98.67\% & 99.82\% & 99.59\% & 0\% & 0\% & 0\%\\
+& Star & 98.67\% & 99.82\% & 99.59\% & 0\% & 0\% & 0\%\\
 Recall & Galaxy & 94.61\% & 96.68\% & 95.06\% & 0\% & 0\% & 0\%\\
- & Qso & 97.13\% & 96.56\% & 96.5\% & 0\% & 0\% & 0\%\\
+& Qso & 97.13\% & 96.56\% & 96.5\% & 0\% & 0\% & 0\%\\
 \addlinespace
- & Star & 97.11\% & 99.82\% & 97.74\% & 0\% & 0\% & 0\%\\
+& Star & 97.11\% & 99.82\% & 97.74\% & 0\% & 0\% & 0\%\\
 F1 & Galaxy & 95.31\% & 96.56\% & 95.76\% & 0\% & 0\% & 0\%\\
- & Qso & 97.98\% & 96.68\% & 97.63\% & 0\% & 0\% & 0\%\\
+& Qso & 97.98\% & 96.68\% & 97.63\% & 0\% & 0\% & 0\%\\
 \bottomrule
 \end{tabular}
 \end{table}
