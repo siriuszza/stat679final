@@ -200,11 +200,11 @@ SGD with different momentum, Adam, 10 epoch, batch size 64,lr 0.001
 ## Voting Classifier
 \begin{columns}[T] 
 
-\begin{column}{0.5\textwidth}
+\begin{column}{0.4\textwidth}
 \includegraphics[width=0.8\textwidth]{./images/voting.png}
 \end{column}
 
-\begin{column}{0.5\textwidth} 
+\begin{column}{0.6\textwidth} 
 \begin{itemize}
 \item Soft Voting:
 \begin{itemize}
@@ -504,6 +504,10 @@ F1 & Galaxy & 95.31\% & 96.56\% & 95.76\% & 0\% & 0\% & 0\%\\
 \nocite{*}
 
 
+## Conclusion
 
+\begin{itemize}
+\item 
+\end{itemize}
 
 
