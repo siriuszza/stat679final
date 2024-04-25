@@ -365,8 +365,10 @@ ggarrange(p1,p2,p3, ncol=3,
 
 ```{r fig.cap="Confusion Matrix of Voting Classifier", fig.height=5}
 whole_confusion_matrix <- read.csv("results/pred_results.csv")
-cm_vt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
-cm_table <- as.table(cm_vt$table)
+cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
+cm_hvt <- confusionMatrix(as.factor(whole_confusion_matrix$Hard.Voting), as.factor(whole_confusion_matrix$y_test))
+
+cm_table <- as.table(cm_svt$table)
 cm_df <- as.data.frame(cm_table)
 colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
 
@@ -374,11 +376,24 @@ p4 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "Voting Classifier", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "Soft Voting", x = "Actual Class", y = "Predicted Class") +
   mytheme
-p4
+
+cm_table <- as.table(cm_hvt$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p5 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Hard Voting", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+ggarrange(p4,p5, ncol=2,
+          common.legend = TRUE,  legend="bottom")
 ```
 
+table of accuracy of 
 
 # Conclusions
 ```{r results='hide'}
