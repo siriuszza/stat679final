@@ -334,10 +334,12 @@ kable(lr_coef, format = "latex",
 ```
 
 ## Metadata
+
 \begin{itemize}
-\item The accuracy of KNN: 96.80%, Tree: 97.44%, Logistic Regression: 97.00%
-\item Soft voting: 97.75%, Hard voting: 97.55%
+\item The accuracy of KNN: 96.80\%, Tree: 97.44\%, Logistic Regression: 97.00\%
+\item Soft voting: 97.75\%, Hard voting: 97.55\%
 \end{itemize}
+
 ```{r}
 cm_tree <- confusionMatrix(as.factor(py$tree_pred), as.factor(testData$class))
 cm_table <- as.table(cm_tree$table)
@@ -395,8 +397,8 @@ ggarrange(p1,p2,p3, ncol=3,
 ## Images
 
 \begin{itemize}
-\item The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%
-\item Soft voting: 97.71%, Hard voting: 91.74%
+\item The accuracy of CNN of images 91.73\%, CNN of spectrum is 88.91\%
+\item Soft voting: 97.71\%, Hard voting: 91.74\%
 \end{itemize}
 
 ```{r fig.cap="Confusion Matrices of CNN Models", fig.height=4}
