@@ -398,7 +398,7 @@ ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) +
 
 # Conclusion
 
-
+The voting classifier 
 
 
 

@@ -78,6 +78,14 @@ Classifying celestial objects into stars, galaxies or quasars.
 <!--   \includegraphics[width=0.5\textwidth]{./images/intro.png} -->
 <!-- \end{center} -->
 
+## Idea
+
+\begin{itemize}
+\item There are a lot of classification models: KNN,Tree,Logistic Regression, Neuro Networks
+\item Different models may perform differently on same data
+\item Can we combine them together to make more accurate classification?
+\item Voting Classifier
+\end{itemize}
 
 # Data & Preprocessing
 ## Images
@@ -153,9 +161,9 @@ kable(tab_exp, format = "latex",
 ## EDA
 - Missing Values:
   - Metadata: 3, Regression Imputation
-  - Image of Spectra: n
+  - Image of Spectra: 14115
   
-- Samples for each catagory: 33333
+- Samples for each category: 33333
 
 - Correlationship
 
@@ -232,14 +240,11 @@ SGD with different momentum, Adam, 10 epoch, batch size 64,lr 0.001
 \item Soft Voting:
 \begin{itemize}
 \item Models \(\{C_1,\cdots C_n\}\) 
-\item For a given inputs, \(C_i\) has a prediction\(P_i(y_j | x)\) 
-\item The predict probabilities for voting classifier \(P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)\)
+\item For a given inputs, \(C_i\) has a predict probability\(P_i(y_j | x)\) 
+\item The probabilities for voting classifier \(P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)\)
 \item The prediction \( p(x) = \arg \max_{y_j} P(y_j | x)\)
 \end{itemize}
-\item Hard Voting:
-\begin{itemize}
-\item \(p(x) = \text{mode}(p_1(x), p_2(x), \ldots, p_m(x))\), mode identify the most frequent one
-\end{itemize}
+
 \end{itemize}
 
 \end{column}
@@ -247,6 +252,8 @@ SGD with different momentum, Adam, 10 epoch, batch size 64,lr 0.001
 \end{columns}
 
 \begin{itemize}
+\item Weighted Hard Voting:
+For a given inputs, \(C_i\) has a predict \(y^{i}|x:y^{i}_{k=j}=1,y^{i}_{k\neq j}=0\)  \(y_{pred}=\sum_i w_i\cdot y^{i}|x\), here we use accuracy of each model as their weight, the predict class is \(argmax_j~y_{pred}\)
 \item Construction:  
 
 The candidate models are KNN, Logistic Regression, Decision Tree, CNN for celestial objects image and CNN for spectrum image.
@@ -327,6 +334,10 @@ kable(lr_coef, format = "latex",
 ```
 
 ## Metadata
+\begin{itemize}
+\item The accuracy of KNN: 96.80%, Tree: 97.44%, Logistic Regression: 97.00%
+\item Soft voting: 97.75%, Hard voting: 97.55%
+\end{itemize}
 ```{r}
 cm_tree <- confusionMatrix(as.factor(py$tree_pred), as.factor(testData$class))
 cm_table <- as.table(cm_tree$table)
@@ -374,7 +385,7 @@ p3 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
 ```
 
 
-```{r fig.cap='Confusion Matrices of Metadata Models', fig.height=5}
+```{r fig.cap='Confusion Matrices of Metadata Models', fig.height=4}
 library(ggpubr)
 ggarrange(p1,p2,p3, ncol=3,
           common.legend = TRUE,  legend="bottom")
@@ -382,7 +393,11 @@ ggarrange(p1,p2,p3, ncol=3,
 
 
 ## Images
-```{r fig.cap="Confusion Matrices of CNN Models", fig.height=5}
+\begin{itemize}
+\item The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%
+\item Soft voting: 97.71%, Hard voting: 91.74%
+\end{itemize}
+```{r fig.cap="Confusion Matrices of CNN Models", fig.height=4}
 whole_confusion_matrix <- read.csv("results/pred_results.csv")
 
 cm_cnn1 <- confusionMatrix(as.factor(whole_confusion_matrix$CNN_image), as.factor(whole_confusion_matrix$y_test))
@@ -591,13 +606,33 @@ F1 & Qso & 0.9802 & 0.9642 & 0.9751 & 0.8759 & 0.9164 & 0.9865 & 0.9833\\
 
 # Conclusions
 ## Conclusions
+<!-- \begin{columns}[T] -->
+<!-- \begin{column}{.5\textwidth} -->
+<!-- \begin{figure} -->
+<!-- \includegraphics[width=0.5\linewidth]{./images/voting.jpg} -->
+<!-- \end{figure} -->
+<!-- \end{column} -->
 
-\begin{itemize}
-\item 
-\end{itemize}
+<!-- \begin{column}{.5\textwidth} -->
+<!-- \begin{itemize} -->
+<!-- \item For all the combination of classifiers, Soft Voting performs better than Hard Voting -->
+<!-- \item For every data set, Voting method performs equal or better than single model -->
+<!-- \end{itemize} -->
+<!-- \end{column} -->
+
+<!-- \end{columns} -->
+
+
+
 
 # Future Work
 
+\begin{itemize}
+\item Include more models
+\item Use less data
+\item Add noise to the data
+\item Consider more voting methods
+\end{itemize}
 
 
 \nocite{*}
