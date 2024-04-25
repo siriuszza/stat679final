@@ -81,7 +81,7 @@ Classifying celestial objects into stars, galaxies or quasars.
 ## Idea
 
 \begin{itemize}
-\item There are a lot of classification models: KNN,Tree,Logistic Regression, Neuro Networks
+\item There are a lot of classification models: KNN,Tree,Logistic Regression, Neural Networks
 \item Different models may perform differently on same data
 \item Can we combine them together to make more accurate classification?
 \item Voting Classifier
@@ -393,10 +393,12 @@ ggarrange(p1,p2,p3, ncol=3,
 
 
 ## Images
+
 \begin{itemize}
 \item The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%
 \item Soft voting: 97.71%, Hard voting: 91.74%
 \end{itemize}
+
 ```{r fig.cap="Confusion Matrices of CNN Models", fig.height=4}
 whole_confusion_matrix <- read.csv("results/pred_results.csv")
 
@@ -544,6 +546,7 @@ kable(t(eval_df), format = "latex",
   kable_styling(full_width = F, position = "center", font_size = 7) %>% 
   footnote(general = "This is my footnote")
 ```
+
 \begin{table}
 \centering
 \caption{Evaluation of Models}
@@ -606,24 +609,25 @@ F1 & Qso & 0.9802 & 0.9642 & 0.9751 & 0.8759 & 0.9164 & 0.9865 & 0.9833\\
 
 # Conclusions
 ## Conclusions
-<!-- \begin{columns}[T] -->
-<!-- \begin{column}{.5\textwidth} -->
-<!-- \begin{figure} -->
-<!-- \includegraphics[width=0.5\linewidth]{./images/voting.jpg} -->
-<!-- \end{figure} -->
-<!-- \end{column} -->
 
-<!-- \begin{column}{.5\textwidth} -->
-<!-- \begin{itemize} -->
-<!-- \item For all the combination of classifiers, Soft Voting performs better than Hard Voting -->
-<!-- \item For every data set, Voting method performs equal or better than single model -->
-<!-- \end{itemize} -->
-<!-- \end{column} -->
+\begin{columns}[T] 
 
-<!-- \end{columns} -->
+\begin{column}{0.5\textwidth}
+\begin{figure}
+  \includegraphics[width=1\textwidth]{./images/voting.jpeg}
+  \caption{Voting}
+\end{figure}
+\end{column}
 
+\begin{column}{0.5\textwidth} 
+\begin{itemize}
+\item For all the combination of classifiers, Soft Voting performs better than Hard Voting
+\item For every data set, Voting method performs equal or better than single model
+\end{itemize}
 
+\end{column}
 
+\end{columns}
 
 # Future Work
 
