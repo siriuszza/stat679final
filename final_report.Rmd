@@ -16,22 +16,22 @@ header-includes:
   - \setlength{\columnsep}{20pt}
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = F, message = F, echo = F,
                       fig.height = 4)
 ```
 
-# Astronomical Challange 
-Our research focuses on classifying celestial objects into stars, galaxies or quasars using their spectral characteristics. With the advancement of astronomical technology, we can obtain a large amount of data, including images and spectral information, from telescopes and large-scale photometry.
+# Astronomical Challange
 
-The central question of our research is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?"
+Our project focuses on classifying celestial objects into stars, galaxies or quasars using their spectral characteristics. With the advancement of astronomical technology, we can obtain a large amount of data, including images and spectral information, from telescopes and large-scale photometry.
 
+The central question of our project is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?" There are many machine learning methods and statistical models can be applied to classify the celestial objects. However, different methods and models performs differently on same data, "All models are wrong but some are useful." Can we find a more "useful" model through combining several models together? Our solution is voting classifier.
 
 # Data
-We plan to work with the astronomy dataset containing three types of data: 
 
-\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) 
+We plan to work with the astronomy data set containing three types of data:
+
+\quad ![](./data/GALAXY/GALAXY_1.jpg) \quad ![](./data/GALAXY/GALAXY_2.jpg) \quad ![](./data/STAR/STAR_2.jpg) \quad ![](./data/STAR/STAR_2.jpg)
 
 \quad ![](./data/GALAXY/GALAXY_3.jpg) \quad ![](./data/GALAXY/GALAXY_4.jpg) \quad ![](./data/QSO/QSO_1.jpg) \quad ![](./data/QSO/QSO_2.jpg)
 
@@ -41,7 +41,7 @@ Figure 1: Image of the celestial objects
 
 \raggedright
 
-\quad ![](./data/GALAXY_spec/GALAXY_spectrum_1.jpg){width=45%}
+\quad ![](./data/GALAXY_spec/GALAXY_spectrum_1.jpg){width="45%"}
 
 \centering
 
@@ -54,6 +54,7 @@ library(ggthemes)
 library(tidyverse)
 library(kableExtra)
 library(VIM)
+library(ggpubr)
 df = read.csv("./data/metadata/clean_data.csv")[, -20]
 
 vars = colnames(df)
@@ -103,9 +104,10 @@ kable(tab_exp, format = "latex",
   kable_styling(full_width = F, position = "left", font_size = 8)
 ```
 
-They can be found in this [*\textcolor{blue}{link}*](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from https://www.sdss.org. Moreover, the distribution of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced. 
+They can be found in this [\textcolor{blue}{link}](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from <https://www.sdss.org>. Moreover, the distribution of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced.
 
 # EDA
+
 First we will check and deal with missing values in the dataset. There are 1 missing value for **i** and 3 for **z**. Then from Figure 1, we can see that **i** and **z** are quite scattered. So, we use regression imputation to impute the missing values.
 
 Next, we give several visualizations to better understand the data. Figure 2 gives the spread of the celestial objects (galaxies, quasars, stars) across the universe. The x-axis is right ascension angle (at J2000 epoch), and the y-axis is declination angle (at J2000 epoch). We can see some interesting patterns, but it is unclear for classification.
@@ -140,6 +142,7 @@ corrplot(corr)
 ```
 
 # Methods
+
 For our three types of data, we intend to use three seperate methods to build three different classification models. Then, we plan to use a voting classifier to combine three models and give our final model.
 
 In this section, we will give brief introduction to the methods.
@@ -149,9 +152,10 @@ In this section, we will give brief introduction to the methods.
 ## Decision Tree
 
 ## CNN
+
 Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of NN in this problem. This CNN is quit shallow (337k parameters) with two convolutional layers and a maxpooling in between and followed by three fully connected layers. The competitor is VGG16 which is a much deeper NN with 13 convoluntional layers and 3 fully connected layers (138million parameters).
 
-\quad ![](./data/simple_cnn_visualization.png){width=45%}
+\quad ![](./data/simple_cnn_visualization.png){width="45%"}
 
 \centering
 
@@ -159,16 +163,16 @@ Figure 4: Structure of CNN
 
 \raggedright
 
-
-
 ```{r}
 
 ```
 
 ## Voting Classifier
 
+We tried to use two types of voting methods, soft voting and weighted hard voting. Their strategy are slightly different but the idea is similar: we want to combine the output of several model together to generate a more accurate one. Suppose we have models $\{C_1,\cdots C_n\}$, for a give input $x$, each model can have a prediction:$y^i_{pred}|x=(y_1,y_2,y_3)$ where one of $y_j$ is 1 indicating the predicted class is $j$ while others are 0. Or a predicting probability: $P_i(y_j | x)$ which is the predicting probability for x belong to class $j$ for $i_{th}$ model. For KNN and Tree model, their prediction and predicting probability are the same which means their predicting probability is one for predicting class. For soft voting, the prediction is made by average predicting probability of all candidate models and prediction of the voting model is the class with largest predicting probability. The probabilities for voting classifier given input \(x\) is $P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)$ so the prediction is $p(x) = \arg \max_{y_j} P(y_j | x)$ where $m$ is the number of models. For weighted hard voting, the prediction is made by sum of weighted voting for each class for all the candidate models and prediction of the voting model is the class with largest number of weighted voting. For a given inputs, \(C_i\) has a predict \(y^{i}|x:y^{i}_{k=j}=1,y^{i}_{k\neq j}=0\) and the prediction for weighted hard voting is \(y_{pred}=\sum_i w_i\cdot y^{i}|x\), so the predict class is \(argmax_j~y_{pred}\).
 
 # Results
+
 ## Metadata
 
 Regarding statistical models, we intend to use either classification trees, or KNN models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
@@ -224,11 +228,8 @@ p2 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
 
 gridExtra::grid.arrange(p1,p2,nrow=2)
 
-sum(knnModel == testData$class) / nrow(testData)
+#sum(knnModel == testData$class) / nrow(testData)
 ```
-
-
-
 
 ```{r results='asis'}
 # Extract statistics from confusion matrix
@@ -251,9 +252,8 @@ kable(stats_df,
 From the confusion matrix and statistics, we see a success in building model through the numerical data. By using several index and the red shift, our simple models reach more than 96% accuracy on validation data.
 
 ## Image of the celestial objects
-The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2%(SGD)91.8%(Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. 
-The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models.
-With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time. 
+
+The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2%(SGD)91.8%(Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models. With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time.
 
 ```{r fig.cap='loss curves'}
 library(ggplot2)
@@ -280,34 +280,7 @@ vgg16 <- data.frame(
             0.181, 0.204, 0.178, 0.222, 0.216, 0.189, 0.179, 0.208, 0.171, 0.176)
 )
 
-SimpleCNN_SGD_spec <- data.frame(
-  Model = "SimpleCNN_SGD_spec",
-  Iteration = 1:50,
-  Loss = c(1.086, 0.778, 0.307, 0.232, 0.192, 
-                 0.151, 0.131, 0.124, 0.105, 0.100, 
-                 0.088, 0.075, 0.072, 0.069, 0.067, 
-                 0.056, 0.059, 0.052, 0.049, 0.048, 
-                 0.045, 0.040, 0.046, 0.041, 0.039, 
-                 0.037, 0.037, 0.037, 0.033, 0.030, 
-                 0.032, 0.030, 0.031, 0.032, 0.025, 
-                 0.026, 0.026, 0.025, 0.027, 0.025, 
-                 0.022, 0.024, 0.027, 0.023, 0.018, 
-                 0.021, 0.017, 0.020, 0.020, 0.021)
-)
 
-# Combine the two datasets
-loss_data <- rbind(simple_cnn, vgg16)
-
-# Now plot using ggplot2
-ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
-  geom_line() + 
-  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
-  theme_minimal() +
-  labs(title = "Loss Curves", x = "Iteration", y = "Loss", color = "Model") +
-  mytheme
-```
-
-```{r}
 simple_cnn_0.9 <- data.frame(
   Model = "Simple CNN 0.9",
   Iteration = 1:60,
@@ -366,22 +339,8 @@ simple_cnn_adam <- data.frame(
     0.168, 0.158, 0.163, 0.169, 0.166, 0.166,
     0.155, 0.158, 0.163, 0.161, 0.162, 0.150
 ))
-
-CNN_select_table <- data.frame(
-  Name = c("SimpleCNN","VGG16","Res18"),
-  Accuracy = c("91.68%","94.11%","94.89%"),
-  train_time = c("635","1281","1324")
-)
-
-SimpleCNN_comp <- data.frame(
-  Optimizer = c("SGD_mom0.9","SGD_mom0.95","SGD_mom0.99","Adam"),
-  Accuray = c("91.68%","92.84%","93.78%","93.91%"),
-  train_time = c("458","463","462","463")
-)
-
-knitr::kable(t(CNN_select_table), format = "markdown", caption = "CNN comparison",)
-knitr::kable(t(SimpleCNN_comp), format = "markdown", caption = "CNN tuning  comparison",)
-loss_data <- rbind(simple_cnn_0.9, simple_cnn_0.95,simple_cnn_0.99,simple_cnn_adam)
+# Combine the two datasets
+loss_data <- rbind(simple_cnn, vgg16)
 
 # Now plot using ggplot2
 ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
@@ -392,21 +351,131 @@ ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) +
   mytheme
 ```
 
+```{r}
+CNN_select_table <- data.frame(
+  Name = c("SimpleCNN","VGG16","Res18"),
+  Accuracy = c("91.68%","94.11%","94.89%"),
+  train_time = c("635","1281","1324")
+)
+knitr::kable(t(CNN_select_table), format = "latex", caption = "CNN comparison",) %>%
+  kable_styling(full_width = F, position = "left", font_size = 8)
+```
+
+```{r}
+SimpleCNN_comp <- data.frame(
+  Optimizer = c("SGD_mom0.9","SGD_mom0.95","SGD_mom0.99","Adam"),
+  Accuray = c("91.68%","92.84%","93.78%","93.91%"),
+  train_time = c("458","463","462","463")
+)
+
+
+knitr::kable(t(SimpleCNN_comp), format = "latex", caption = "CNN tuning  comparison",) %>%
+  kable_styling(full_width = F, position = "left", font_size = 8)
+loss_data <- rbind(simple_cnn_0.9, simple_cnn_0.95,simple_cnn_0.99,simple_cnn_adam)
+
+# Now plot using ggplot2
+ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
+  geom_line() + 
+  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
+  theme_minimal() +
+  labs(title = "Loss Curves", x = "Iteration", y = "Loss", color = "Model") +
+  mytheme
+```
+The accuracy of CNN of images 91.73\%, CNN of spectrum is 88.91\%
+```{r fig.cap="Confusion Matrices of CNN Models", fig.height=4}
+whole_confusion_matrix <- read.csv("pre/results/pred_results.csv")
+
+cm_cnn1 <- confusionMatrix(as.factor(whole_confusion_matrix$CNN_image), as.factor(whole_confusion_matrix$y_test))
+cm_cnn2 <- confusionMatrix(as.factor(whole_confusion_matrix$CNN_spec), as.factor(whole_confusion_matrix$y_test))
+
+cm_table <- as.table(cm_cnn1$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p4 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "CNN for Image of Celestial Objects", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+cm_table <- as.table(cm_cnn2$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p5 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "CNN for Iamge of Spectrum", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+ggarrange(p4, p5, ncol=2,
+          common.legend = TRUE,  legend="bottom")
+```
+
 ## Image of the spectra
+
+The performance of SimpleCNN on spectrum image classification is also very good. We are able to get 0.021 cross entropy loss which is 99.14% accuracy on validation data set without missing (unreadable) images after 1467 seconds training. And if we include missing value for which the CNN randomly guess a class, the accuracy is 88.91%.
+
+```{r}
+SimpleCNN_SGD_spec <- data.frame(
+  Model = "SimpleCNN_SGD_spec",
+  Iteration = 1:50,
+  Loss = c(1.086, 0.778, 0.307, 0.232, 0.192, 
+                 0.151, 0.131, 0.124, 0.105, 0.100, 
+                 0.088, 0.075, 0.072, 0.069, 0.067, 
+                 0.056, 0.059, 0.052, 0.049, 0.048, 
+                 0.045, 0.040, 0.046, 0.041, 0.039, 
+                 0.037, 0.037, 0.037, 0.033, 0.030, 
+                 0.032, 0.030, 0.031, 0.032, 0.025, 
+                 0.026, 0.026, 0.025, 0.027, 0.025, 
+                 0.022, 0.024, 0.027, 0.023, 0.018, 
+                 0.021, 0.017, 0.020, 0.020, 0.021)
+)
+ggplot(SimpleCNN_SGD_spec, aes(x = Iteration, y = Loss, color = Model)) + 
+  geom_line() + 
+  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
+  theme_minimal() +
+  labs(title = "Loss Curves", x = "Iteration", y = "Loss", color = "Model") +
+  mytheme
+```
 
 ## Voting Classifier
 
-# Conclusion
+```{r fig.cap="Confusion Matrices of Voting Classifier", fig.height=5}
+cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
+cm_hvt <- confusionMatrix(as.factor(whole_confusion_matrix$Hard.Voting), as.factor(whole_confusion_matrix$y_test))
 
-The voting classifier 
+cm_table <- as.table(cm_svt$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p6 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Soft Voting", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+
+cm_table <- as.table(cm_hvt$table)
+cm_df <- as.data.frame(cm_table)
+colnames(cm_df) <- c('Reference', 'Prediction', 'Freq')
+
+p7 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "royalblue") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  labs(title = "Hard Voting", x = "Actual Class", y = "Predicted Class") +
+  mytheme
+ggarrange(p6, p7, ncol=2,
+          common.legend = TRUE,  legend="bottom")
+```
+
+(need a table)
 
 
 
+# Conclusion and future work
 
-
-
-
-
-
-
-
+The voting classifier
