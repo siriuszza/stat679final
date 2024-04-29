@@ -309,7 +309,7 @@ Figure \@ref(fig:cm-metadata) gives the confusion matrices for all three models.
 
 ## Image of Celestial Objects
 
-The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2% (SGD), 91.8% (Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models. With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time.
+The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2% (SGD), 91.8% (Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models. Detailed comparison is in Table \@ref(tab:cnn-comp) and Figure \@ref(fig:loss-cnns). With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time.
 
 ```{r}
 library(ggplot2)
@@ -420,7 +420,7 @@ p_hyper = ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) +
   guides(color = guide_legend(nrow = 2, byrow = TRUE))
 ```
 
-The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%.
+The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%. The confusion matrix (Figure \@ref(fig:cm-cnn)) shows that CNN classified star (class 2) better than the other celestial objects.
 
 ```{r fig.cap="Confusion Matrices of CNN Models"}
 whole_confusion_matrix <- read.csv("pre/results/pred_results.csv")
@@ -453,7 +453,7 @@ p5 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
 
 ## Image of Spectrum
 
-The performance of SimpleCNN on spectrum image classification is also very good. We are able to get 0.021 cross entropy loss which is 99.14% accuracy on validation data set without missing (unreadable) images after 1467 seconds training. And if we include missing value for which the CNN randomly guess a class, the accuracy is 88.91%.
+The performance of SimpleCNN on spectrum image classification is also very good. We are able to get 0.021 cross entropy loss which is 99.14% accuracy on validation data set without missing (unreadable) images after 1467 seconds training (Figure \@ref(fig:loss-simp-cnn)). And if we include missing value for which the CNN randomly guess a class, the accuracy is 88.91%.
 
 ```{r}
 SimpleCNN_SGD_spec <- data.frame(
@@ -475,7 +475,7 @@ SimpleCNN_SGD_spec <- data.frame(
 ## Voting Classifier
 If we use voting strategy for only metadata model or CNN, we see a small improve of accuracy on both of them. For metadata models. the soft voting has 97.75%, weighted hard voting has 97.55% on validation data set which is better than KNN (96.80%), Tree model (97.44%) and Logistic Regression (97.00%). For CNN models, soft voting:  97.71%, weighted hard voting: 91.55% are also better than CNN celestial: 91.73% and CNN spectrum 88.91%.
 
-The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1).
+The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix (Figure \@ref(fig:cm-vc)) we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1). The detailed model evaluation indexes are shown in Table \@ref(tab:eval)
 
 ```{r}
 cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
