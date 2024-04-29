@@ -478,7 +478,7 @@ p4 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "CNN for Image of Celestial Objects", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "CNN for Celestial Objects", x = "Actual Class", y = "Predicted Class") +
   mytheme
 
 cm_table <- as.table(cm_cnn2$table)
@@ -489,7 +489,7 @@ p5 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "white", high = "royalblue") +
   geom_text(aes(label = Freq), vjust = 1) +
-  labs(title = "CNN for Iamge of Spectrum", x = "Actual Class", y = "Predicted Class") +
+  labs(title = "CNN for Spectrum", x = "Actual Class", y = "Predicted Class") +
   mytheme
 
 ggarrange(p4, p5, ncol=2,
@@ -524,6 +524,8 @@ ggplot(SimpleCNN_SGD_spec, aes(x = Iteration, y = Loss, color = Model)) +
 ```
 
 ## Voting Classifier
+If we use voting strategy for only metadata model or CNN, we see a small improve of accuracy on both of them. For metadata models. the soft voting has 97.75%, weighted hard voting has 97.55% on validation data set which is better than KNN (96.80%), Tree model (97.44%) and Logistic Regression (97.00%). For CNN models, soft voting:  97.71%, weighted hard voting:91.55% are also better than CNN celestial: 91.73% and CNN spectrum 88.91%.
+The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1).
 
 ```{r fig.cap="Confusion Matrices of Voting Classifier", fig.height=5}
 cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
@@ -558,8 +560,12 @@ ggarrange(p6, p7, ncol=2,
 
 # Conclusion and future work
 
-The voting classifier
+The voting classifier can improve the accuracy by choosing the best predict class from all the models. And it is more robust for missing data and outliers. From table 4 in appendix we can see that for accuracy, F1 score, precision and recall, soft voting performs better than weighted hard voting. Moreover, for most of the class, our voting model performs better than single model except for Galaxy and Quasar of image of spectrum data. CNN does a better job for these two class but much worse for Star.
+However, the price for better performance is more data used and model model trained. Although we use as simple model as possible for this job, the training and combining is also much more complicated for soft voting and weighted hard voting. In addition, the data we use is in very good quality and quit sufficient for training a well performed model which is not so common in real data. The corrupt or insufficient data may affect the accuracy of single model as well as voting classifier.
+According to these facts, our future work may focus on use less models with better voting strategies and use less data with worse data quality to test them.
 
+
+(need table for coefficients of logistic regression, picture of tree model, intepretation of logistic regression (one unit change leads to ...) and tree model (an object with u<.. redshift > ... will be classified as ....))
 
 \newpage
 
