@@ -3,22 +3,26 @@ title: "**STAT 679 Final Project Report**"
 author:
    - Xiaoyang Wang
    - Ziang Zeng
-geometry: "left=1cm,right=1cm,top=1cm,bottom=1cm"
-classoption: twocolumn
+geometry: margin=1in
+fontsize: 11pt
+# classoption: twocolumn
 output:
-  pdf_document:
+  bookdown::pdf_document2:
     number_sections: yes
+    keep_tex: true
+    toc: false
+bibliography: references.bib
+nocite: '@*'
 header-includes: 
   - \usepackage{booktabs}
   - \usepackage{bm}
   - \usepackage{extarrows}
-  - \usepackage{nopageno}
   - \setlength{\columnsep}{20pt}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = F, message = F, echo = F,
-                      fig.height = 4)
+                      fig.height = 3)
 library(reticulate)
 library(ggthemes)
 library(tidyverse)
@@ -42,40 +46,41 @@ mytheme <- theme(plot.title=element_text(face="bold.italic",
                  legend.position="right") 
 ```
 
+
 # Astronomical Challange
 
 Our project focuses on classifying celestial objects into stars, galaxies or quasars using their spectral characteristics. With the advancement of astronomical technology, we can obtain a large amount of data, including images and spectral information, from telescopes and large-scale photometry.
 
-The central question of our project is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?" There are many machine learning methods and statistical models can be applied to classify the celestial objects. However, different methods and models performs differently on same data, "All models are wrong but some are useful." Can we find a more "useful" model through combining several models together? Our solution is voting classifier.
+The central question of our project is: "How can we effectively use image and spectral data to accurately classify different types of stellar objects?" There are many machine learning methods and statistical models can be applied to classify the celestial objects. However, different methods and models performs differently on same data, "All models are wrong but some are useful." Can we find a more "useful" model through combining several models together? Our solution is the voting classifier.
 
 # Data
 
-We plan to work with the astronomy data set containing three types of data: images of the celestial objects, images of the spectrum, and the metadata of the objects. Figure 1 displays images of a galaxy, a star, and a quasar, from left to right, respectively. Figure 2 displays images of the spectrum of a galaxy, a star, and a quasar, from left to right, respectively. Table 1 provides explanations of the variables within the metadata.
+We plan to work with the astronomy data set containing three types of data: images of the celestial objects, images of the spectrum, and the metadata of the objects. The first row in Figure \ref{fig:data_images} displays images of a galaxy, a star, and a quasar, from left to right, respectively. The second row in Figure \ref{fig:data_images} displays images of the spectrum of a galaxy, a star, and a quasar, from left to right, respectively. Table \ref{tab:metadata} provides explanations of the variables within the metadata.
 
 \begin{figure}
 \centering
-\begin{minipage}{0.45\textwidth}
+\begin{minipage}{0.8\textwidth}
 \centering
 \includegraphics[width=\linewidth]{./data/GALAXY/GALAXY_1.jpg}\hfill
 \includegraphics[width=\linewidth]{./data/STAR/STAR_1.jpg}\hfill
 \includegraphics[width=\linewidth]{./data/QSO/QSO_1.jpg}
-\caption{Image of Celestial Objects}
+
 \end{minipage}
 \end{figure}
 
 \begin{figure}
 \centering
-\begin{minipage}{0.45\textwidth}
+\begin{minipage}{\textwidth}
 \centering
 \includegraphics[width=0.3\linewidth]{./data/GALAXY_spec/GALAXY_spectrum_1.jpg}\hfill
 \includegraphics[width=0.3\linewidth]{./data/STAR_spec/STAR_spectrum_1.jpg}\hfill
 \includegraphics[width=0.3\linewidth]{./data/QSO_spec/QSO_spectrum_1.jpg}
-\caption{Image of Spectrum}
+\caption{Images of Celestial Objects and Corresponding Spectrum Images.}
+\label{fig:data_images}
 \end{minipage}
 \end{figure}
 
 ```{r results='asis'}
-
 df = read.csv("./data/metadata/clean_data.csv")[, -20]
 
 Variables = colnames(df)
@@ -101,32 +106,41 @@ Explanations = c("Object Identifier",
 
 tab_exp = data.frame(Variables, Explanations)
 
-kable(tab_exp, format = "latex", 
-      booktabs = TRUE,
-      escape = F,
-      caption = "Metadata of the celestial objects") %>%
-  kable_styling(full_width = F, position = "left", font_size = 8)
+# kable(tab_exp, format = "latex", 
+#       booktabs = TRUE,
+#       escape = F,
+#       caption = "Metadata of the celestial objects") %>%
+#   kable_styling(full_width = F, position = "center")
 ```
 
-They can be found in this [\textcolor{blue}{link}](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from <https://www.sdss.org>. Moreover, the distribution of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced.
+They can be found in this [\textcolor{blue}{link}](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from <https://www.sdss.org>. Moreover, the distribution of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced. Moreover, we encode the class with the following mapping: Galaxy ~ 0, Quasar ~ 1, Star ~ 2.
 
 # Exploratory Data Analysis
 
-First, we will conduct exploratory data analysis on our dataset to better understand it and to find any possible errors. Figure 3 shows the distribution of variables that are meaningful for classification. We can see that the means of all variables across different classes are quite different. Moreover, there are no significant outliers.
+First, we will conduct exploratory data analysis on our dataset to better understand it and to find any possible errors. Figure \@ref(fig:boxplot) shows the distribution of variables that are meaningful for classification. We can see that the means of all variables across different classes are quite different. Moreover, there are no significant outliers.
 
-Then, Figure 4 gives the correlationship between variables in the metadata. We can see that **redshift** has strong correlationship with the class of the object. Also, the filter variables (**u**, **g**, **r**, **i**, **z**) are correlated with each other.
-
-Next, we will check and deal with missing values in the dataset. For images of the celestial objects, there is no missing value. For images of the spectrum, we have 14115 images that are unreadable. Considering that they are hard to impute, we just ignore them and conduct the analysis on the spectrum based on the rest of the images. For the metadata, there are 1 missing value for **i** and 3 for **z**. We use regression imputation with filter variables to impute the missing values as they are correlated with each other and quite scattered. 
-
-```{r fig.cap="Boxplot", fig.height=3}
+```{r boxplot, fig.cap="Boxplot", fig.height=2.7, fig.width=5}
 df_org = read.csv("./data/metadata/org_metadata.csv")
 df_org[df_org == -9999] = NA
 df_long = gather(df_org, key = "variable", value = "value", u, g, r, i, z, redshift) 
 
 ggplot(df_long, aes(x = variable, y = value, col = class)) +
   geom_boxplot(alpha = 0.5) +
-  labs(x = "Variable", y = "Value")+mytheme
+  labs(x = "Variable", y = "Value") + mytheme +
+  guides(color = guide_legend(position = "bottom"))
 ```
+
+Then, Figure \@ref(fig:corr) gives the correlationship between variables in the metadata. We can see that **redshift** has strong correlationship with the class of the object. Also, the filter variables (**u**, **g**, **r**, **i**, **z**) are correlated with each other.
+
+```{r corr, fig.cap="Correlation", fig.height=3}
+library(corrplot)
+corr = cor(df %>% select(-rerun))
+corrplot(corr)
+```
+
+Next, we will check and deal with missing values in the dataset. For images of the celestial objects, there is no missing value. For images of the spectrum, we have 14115 images that are unreadable. Considering that they are hard to impute, we just ignore them and conduct the analysis on the spectrum based on the rest of the images. For the metadata, there are 1 missing value for **i** and 3 for **z**. We use regression imputation with filter variables to impute the missing values as they are correlated with each other and quite scattered. 
+
+
 
 <!-- \newpage -->
 
@@ -139,17 +153,9 @@ ggplot(df_long, aes(x = variable, y = value, col = class)) +
 <!--   guides(color = guide_legend(override.aes = list(alpha = 1))) + mytheme -->
 <!-- ``` -->
 
-```{r fig.cap="Correlation"}
-library(corrplot)
-corr = cor(df %>% select(-rerun))
-corrplot(corr)
-```
-
 # Methods
 
-For our three types of data, we intend to use three seperate methods to build three different classification models. Then, we plan to use a voting classifier to combine three models and give our final model.
-
-In this section, we will give brief introduction to the methods that we have used.
+For our three types of data, we intend to use three seperate methods to build three different classification models. Then, we plan to use a voting classifier to combine three models and give our final model. In this section, we will give brief introduction to the methods that we have used.
 
 ## kNN
 The k-Nearest Neighbors (kNN) algorithm is a simple, but powerful machine learning technique that can be used for classification. At its core, kNN makes predictions about the classification of a data point based on the majority vote or average of its *k* nearest neighbors. With cross validation, we eventually selected \( k = 3\).
@@ -164,34 +170,28 @@ $$
 P(Y_i = k) = \frac{e^{\beta_k \cdot X_i}}{\sum_{j = 1}^3 e^{\beta_j \cdot X_i}}, i = 0, 1, 2.
 $$
 
-Coefficient Estimation: The model estimates coefficients (or weights) associated with each feature in order to predict the log-odds of the outcomes for each class, except one. This excluded class serves as a "reference" or "baseline."
+With cross validation, we have selected the hyperparameters as follows: Regularization: L2, \(C = 1\), where the value of \(C\) gives the strength of regularization.
 
 ## CNN
 
-Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of NN in this problem. This CNN is quit shallow (337k parameters) with two convolutional layers and a maxpooling in between and followed by three fully connected layers. The competitor is VGG16 which is a much deeper NN with 13 convoluntional layers and 3 fully connected layers (138million parameters).
-
-\quad ![](./data/simple_cnn_visualization.png){width="45%"}
-
-\centering
-
-Figure 4: Structure of CNN
-
-\raggedright
+Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of NN in this problem. This CNN is quite shallow (337k parameters) with two convolutional layers and a maxpooling in between, followed by three fully connected layers. The structure can be seen in Figure \ref{fig:cnn}. The competitor is VGG16 which is a much deeper NN with 13 convoluntional layers and 3 fully connected layers (138 million parameters).
 
 ## Voting Classifier
 
-We tried to use two types of voting methods, soft voting and weighted hard voting. Their strategy are slightly different but the idea is similar: we want to combine the output of several model together to generate a more accurate one. Suppose we have models $\{C_1,\cdots C_n\}$, for a give input $x$, each model can have a prediction:$y^i_{pred}|x=(y_1,y_2,y_3)$ where one of $y_j$ is 1 indicating the predicted class is $j$ while others are 0. Or a predicting probability: $P_i(y_j | x)$ which is the predicting probability for x belong to class $j$ for $i_{th}$ model. For KNN and Tree model, their prediction and predicting probability are the same which means their predicting probability is one for predicting class. For soft voting, the prediction is made by average predicting probability of all candidate models and prediction of the voting model is the class with largest predicting probability. The probabilities for voting classifier given input \(x\) is $P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)$ so the prediction is $p(x) = \arg \max_{y_j} P(y_j | x)$ where $m$ is the number of models. For weighted hard voting, the prediction is made by sum of weighted voting for each class for all the candidate models and prediction of the voting model is the class with largest number of weighted voting. For a given inputs, \(C_i\) has a predict \(y^{i}|x:y^{i}_{k=j}=1,y^{i}_{k\neq j}=0\) and the prediction for weighted hard voting is \(y_{pred}=\sum_i w_i\cdot y^{i}|x\), so the predict class is \(argmax_j~y_{pred}\).
+We try to use two types of voting methods, soft voting and weighted hard voting. Their strategy are slightly different but the idea is similar: to combine the output of several model together to generate a more accurate one. 
+
+Suppose we have models $\{C_1,\cdots C_n\}$, for a given input $x$. Each model can have a prediction: $y^i_{pred}|x=(y_1,y_2,y_3)$, where one of $y_j$ is 1, indicating the predicted class is $j$, while others are 0. Or a predicting probability: $P_i(y_j | x)$ which is the predicting probability for x belong to class $j$ for $i_{th}$ model. 
+
+For kNN and Tree model, their prediction and predicting probability are the same which means their predicting probability is one for predicting class. For soft voting, the prediction is made by average predicting probability of all candidate models and prediction of the voting model is the class with largest predicting probability. The probabilities for voting classifier given input \(x\) is $P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)$. So the prediction is $p(x) = \arg \max_{y_j} P(y_j | x)$ where $m$ is the number of models. 
+
+For weighted hard voting, the prediction is made by sum of weighted voting for each class for all the candidate models and prediction of the voting model is the class with largest number of weighted voting. For a given input, \(C_i\) has a predict \(y^{i}|x:~y^{i}_{k=j}=1, ~y^{i}_{k\neq j}=0\) and the prediction for weighted hard voting is \(y_{pred}=\sum_i w_i\cdot y^{i}|x\). So the predict class is \(argmax_j~y_{pred}\).
 
 # Results
 ## Metadata
 
-Regarding statistical models, we intend to use either classification trees, or KNN models, incorporating ensemble learning methods such as bagging or boosting to improve performance. Our ultimate goal is to develop a hybrid model that combines image classifiers with meta-classifiers, aiming for superior accuracy.
-
 ```{python results='hide'}
-from sklearn.ensemble import VotingClassifier
-
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 
 from sklearn.model_selection import train_test_split
@@ -226,6 +226,9 @@ lr_clf.fit(X_train, y_train)
 knn_pred = knn_clf.predict(X_test)
 tree_pred = tree_clf.predict(X_test)
 lr_pred = lr_clf.predict(X_test)
+
+coef = lr_clf.coef_
+intercept = lr_clf.intercept_
 ```
 
 ```{r}
@@ -233,6 +236,12 @@ library(caret)
 trainData <- read.csv("./data/metadata/train_metadata.csv")
 testData <- read.csv("./data/metadata/test_metadata.csv")
 ```
+
+For metadata, we have trained three models: kNN, Decision Tree and Logistic Regression. 
+
+For the Decision Tree model, the result is shown in Figure \ref{fig:res_dt}. For instance, if the scaled **redshift** is less or equal than -0.626, scaled **g** is less or equal than 1.938, then the object should be classified as quasar.
+
+For Logistic Regression model, the result is shown in Table \ref{tab:lr}. The value of intercepts indicate the log odds of being in the respective class when all the predictor values are zero. Each coefficient for the predictors represents the change in the log odds of being in the respective class for a one-unit change in the predictor variable, holding all other predictors constant.
 
 ```{r}
 cm_tree <- confusionMatrix(as.factor(py$tree_pred), as.factor(testData$class))
@@ -280,20 +289,12 @@ p3 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   mytheme
 ```
 
-
-```{r fig.cap='Confusion Matrices of Metadata Models'}
-library(ggpubr)
-ggarrange(p1,p2,p3, ncol=3,
-          common.legend = TRUE,  legend="bottom")
-```
-
 <!-- ```{r results='asis'} -->
 <!-- # Extract statistics from confusion matrix -->
 <!-- stats_tree <- cm_tree$overall -->
 <!-- stats_knn <- cm_knn$overall -->
 <!-- # Convert to dataframe -->
 <!-- stats_df <- data.frame(Statistic = names(stats_tree), Tree = as.vector(stats_tree),KNN = as.vector(stats_knn)) -->
-
 <!-- # Render table with knitr::kable() -->
 <!-- kable(stats_df, -->
 <!--       format = "latex",  -->
@@ -302,14 +303,13 @@ ggarrange(p1,p2,p3, ncol=3,
 <!--       caption = "Statistics from Confusion Matrix",  -->
 <!--       digits = 5) %>% -->
 <!--   kable_styling(full_width = F, position = "center", font_size = 8) -->
-
 <!-- ``` -->
 
-From the confusion matrix and statistics, we see a success in building model through the numerical data. By using several index and the red shift, our simple models reach more than 96% accuracy on validation data.
+Figure \@ref(fig:cm-metadata) gives the confusion matrices for all three models. Combining the evaluations shown in Table \@ref(tab:eval) for those three models, we can see a success in building models through the numerical data. By using several indexes and the red shift, our simple models reach more than 96% accuracy on validation data.
 
-## Image of the celestial objects
+## Image of Celestial Objects
 
-The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2%(SGD)91.8%(Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models. With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time.
+The results of this simple CNN is quite good. The cross entropy loss drop quickly after 10k iterations and get stable around 0.27. And the robustness can also be seen on its 90.2% (SGD), 91.8% (Adam) average accuracy after 10 epochs training on validation data. Which actually discourages us to apply deeper NN which is quite time and energy consuming. The training took 20 min and the cross entropy loss is under 0.2 after 3 epochs training and stable at 0.18. On the validation data set, VGG has 94.23% which is better than our simple CNN. However this high accuracy not only consume lot of time but also make it more difficult to improve the performance through the combination of models. With these facts, we plan to modify the simple CNN a little without changing its main structure, and use this simple CNN to build up a final model which is expected to have similar performance as VGG16 while consume less time.
 
 ```{r}
 library(ggplot2)
@@ -321,19 +321,19 @@ simple_cnn <- data.frame(
   Model = "Simple CNN",
   Iteration = 1:60,
   Loss = c(1.094, 1.015, 0.678, 0.615, 0.595, 0.541, 0.444, 0.366, 0.357, 0.350, 
-            0.338, 0.338, 0.346, 0.327, 0.301, 0.319, 0.301, 0.307, 0.297, 0.286,
-            0.299, 0.285, 0.285, 0.277, 0.279, 0.270, 0.274, 0.277, 0.269, 0.266,
-            0.258, 0.258, 0.260, 0.261, 0.259, 0.264, 0.262, 0.248, 0.247, 0.241,
-            0.252, 0.245, 0.247, 0.249, 0.240, 0.245, 0.240, 0.237, 0.233, 0.244,
-            0.241, 0.243, 0.234, 0.225, 0.230, 0.238, 0.222, 0.226, 0.239, 0.237)
+           0.338, 0.338, 0.346, 0.327, 0.301, 0.319, 0.301, 0.307, 0.297, 0.286,
+           0.299, 0.285, 0.285, 0.277, 0.279, 0.270, 0.274, 0.277, 0.269, 0.266,
+           0.258, 0.258, 0.260, 0.261, 0.259, 0.264, 0.262, 0.248, 0.247, 0.241,
+           0.252, 0.245, 0.247, 0.249, 0.240, 0.245, 0.240, 0.237, 0.233, 0.244,
+           0.241, 0.243, 0.234, 0.225, 0.230, 0.238, 0.222, 0.226, 0.239, 0.237)
 )
 
 vgg16 <- data.frame(
   Model = "VGG16",
   Iteration = 1:30,
   Loss = c(0.997, 0.313, 0.245, 0.257, 0.229, 0.219, 0.249, 0.207, 0.204, 0.243,
-            0.207, 0.201, 0.218, 0.188, 0.194, 0.219, 0.185, 0.180, 0.204, 0.184,
-            0.181, 0.204, 0.178, 0.222, 0.216, 0.189, 0.179, 0.208, 0.171, 0.176)
+           0.207, 0.201, 0.218, 0.188, 0.194, 0.219, 0.185, 0.180, 0.204, 0.184,
+           0.181, 0.204, 0.178, 0.222, 0.216, 0.189, 0.179, 0.208, 0.171, 0.176)
 )
 
 
@@ -341,11 +341,11 @@ simple_cnn_0.9 <- data.frame(
   Model = "SGD 0.9",
   Iteration = 1:60,
   Loss = c(1.094, 1.015, 0.678, 0.615, 0.595, 0.541, 0.444, 0.366, 0.357, 0.350, 
-            0.338, 0.338, 0.346, 0.327, 0.301, 0.319, 0.301, 0.307, 0.297, 0.286,
-            0.299, 0.285, 0.285, 0.277, 0.279, 0.270, 0.274, 0.277, 0.269, 0.266,
-            0.258, 0.258, 0.260, 0.261, 0.259, 0.264, 0.262, 0.248, 0.247, 0.241,
-            0.252, 0.245, 0.247, 0.249, 0.240, 0.245, 0.240, 0.237, 0.233, 0.244,
-            0.241, 0.243, 0.234, 0.225, 0.230, 0.238, 0.222, 0.226, 0.239, 0.237)
+           0.338, 0.338, 0.346, 0.327, 0.301, 0.319, 0.301, 0.307, 0.297, 0.286,
+           0.299, 0.285, 0.285, 0.277, 0.279, 0.270, 0.274, 0.277, 0.269, 0.266,
+           0.258, 0.258, 0.260, 0.261, 0.259, 0.264, 0.262, 0.248, 0.247, 0.241,
+           0.252, 0.245, 0.247, 0.249, 0.240, 0.245, 0.240, 0.237, 0.233, 0.244,
+           0.241, 0.243, 0.234, 0.225, 0.230, 0.238, 0.222, 0.226, 0.239, 0.237)
 )
 
 simple_cnn_0.99 <- data.frame(
@@ -362,7 +362,7 @@ simple_cnn_0.99 <- data.frame(
     0.204, 0.190, 0.187, 0.199, 0.196, 0.199,
     0.190, 0.184, 0.189, 0.176, 0.198, 0.189,
     0.173, 0.179, 0.184, 0.182, 0.179, 0.180
-))
+  ))
 
 simple_cnn_0.95 <- data.frame(
   Model = "SGD 0.95",
@@ -378,7 +378,7 @@ simple_cnn_0.95 <- data.frame(
     0.232, 0.227, 0.224, 0.232, 0.235, 0.241,
     0.234, 0.216, 0.224, 0.222, 0.227, 0.234,
     0.229, 0.222, 0.221, 0.218, 0.228, 0.214
-))
+  ))
 
 simple_cnn_adam <- data.frame(
   Model = "Adam",
@@ -394,12 +394,11 @@ simple_cnn_adam <- data.frame(
     0.169, 0.159, 0.184, 0.180, 0.164, 0.175,
     0.168, 0.158, 0.163, 0.169, 0.166, 0.166,
     0.155, 0.158, 0.163, 0.161, 0.162, 0.150
-))
+  ))
 
 # Combine the two datasets
 loss_data <- rbind(simple_cnn, vgg16)
 
-# Now plot using ggplot2
 p_sv = ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
   geom_line() + 
   geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
@@ -410,42 +409,8 @@ p_sv = ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) +
 ```
 
 ```{r}
-CNN_select_table <- data.frame(
-  Name = c("SimpleCNN","VGG16","Res18"),
-  Accuracy = c("91.68%","94.11%","94.89%"),
-  train_time = c("635","1281","1324")
-)
-
-knitr::kable(CNN_select_table, 
-             format = "latex", 
-             booktabs = T,
-             caption = "CNN comparison",) %>%
-  kable_styling(full_width = F, position = "center", 
-                # font_size = 8
-                )
-```
-
-```{r}
-SimpleCNN_comp <- data.frame(
-  Optimizer = c("SGD_mom0.9","SGD_mom0.95","SGD_mom0.99","Adam"),
-  Accuray = c("91.68%","92.84%","93.78%","93.91%"),
-  train_time = c("458","463","462","463")
-)
-
-
-knitr::kable(SimpleCNN_comp,
-             format = "latex", 
-             booktabs = T,
-             caption = "CNN tuning comparison",) %>%
-  kable_styling(full_width = F, 
-                position = "center")
-
 loss_data <- rbind(simple_cnn_0.9, simple_cnn_0.95,simple_cnn_0.99,simple_cnn_adam)
-```
 
-
-```{r}
-# Now plot using ggplot2
 p_hyper = ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) + 
   geom_line() + 
   geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
@@ -455,14 +420,7 @@ p_hyper = ggplot(loss_data, aes(x = Iteration, y = Loss, color = Model)) +
   guides(color = guide_legend(nrow = 2, byrow = TRUE))
 ```
 
-```{r fig.cap='Loss Curve Plot for Different CNN'}
-ggarrange(p_sv,p_hyper, ncol=2,
-          common.legend = F,
-          legend="bottom")
-```
-
-
-The accuracy of CNN of images 91.73\%, CNN of spectrum is 88.91\%
+The accuracy of CNN of images 91.73%, CNN of spectrum is 88.91%.
 
 ```{r fig.cap="Confusion Matrices of CNN Models"}
 whole_confusion_matrix <- read.csv("pre/results/pred_results.csv")
@@ -491,12 +449,9 @@ p5 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_text(aes(label = Freq), vjust = 1) +
   labs(title = "CNN for Spectrum", x = "Actual Class", y = "Predicted Class") +
   mytheme
-
-ggarrange(p4, p5, ncol=2,
-          common.legend = TRUE,  legend="bottom")
 ```
 
-## Image of the spectra
+## Image of Spectrum
 
 The performance of SimpleCNN on spectrum image classification is also very good. We are able to get 0.021 cross entropy loss which is 99.14% accuracy on validation data set without missing (unreadable) images after 1467 seconds training. And if we include missing value for which the CNN randomly guess a class, the accuracy is 88.91%.
 
@@ -505,29 +460,24 @@ SimpleCNN_SGD_spec <- data.frame(
   Model = "SimpleCNN_SGD_spec",
   Iteration = 1:50,
   Loss = c(1.086, 0.778, 0.307, 0.232, 0.192, 
-                 0.151, 0.131, 0.124, 0.105, 0.100, 
-                 0.088, 0.075, 0.072, 0.069, 0.067, 
-                 0.056, 0.059, 0.052, 0.049, 0.048, 
-                 0.045, 0.040, 0.046, 0.041, 0.039, 
-                 0.037, 0.037, 0.037, 0.033, 0.030, 
-                 0.032, 0.030, 0.031, 0.032, 0.025, 
-                 0.026, 0.026, 0.025, 0.027, 0.025, 
-                 0.022, 0.024, 0.027, 0.023, 0.018, 
-                 0.021, 0.017, 0.020, 0.020, 0.021)
+           0.151, 0.131, 0.124, 0.105, 0.100, 
+           0.088, 0.075, 0.072, 0.069, 0.067, 
+           0.056, 0.059, 0.052, 0.049, 0.048, 
+           0.045, 0.040, 0.046, 0.041, 0.039, 
+           0.037, 0.037, 0.037, 0.033, 0.030, 
+           0.032, 0.030, 0.031, 0.032, 0.025, 
+           0.026, 0.026, 0.025, 0.027, 0.025, 
+           0.022, 0.024, 0.027, 0.023, 0.018, 
+           0.021, 0.017, 0.020, 0.020, 0.021)
 )
-ggplot(SimpleCNN_SGD_spec, aes(x = Iteration, y = Loss, color = Model)) + 
-  geom_line() + 
-  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
-  theme_minimal() +
-  labs(title = "Loss Curves", x = "Iteration", y = "Loss", color = "Model") +
-  mytheme
 ```
 
 ## Voting Classifier
-If we use voting strategy for only metadata model or CNN, we see a small improve of accuracy on both of them. For metadata models. the soft voting has 97.75%, weighted hard voting has 97.55% on validation data set which is better than KNN (96.80%), Tree model (97.44%) and Logistic Regression (97.00%). For CNN models, soft voting:  97.71%, weighted hard voting:91.55% are also better than CNN celestial: 91.73% and CNN spectrum 88.91%.
+If we use voting strategy for only metadata model or CNN, we see a small improve of accuracy on both of them. For metadata models. the soft voting has 97.75%, weighted hard voting has 97.55% on validation data set which is better than KNN (96.80%), Tree model (97.44%) and Logistic Regression (97.00%). For CNN models, soft voting:  97.71%, weighted hard voting: 91.55% are also better than CNN celestial: 91.73% and CNN spectrum 88.91%.
+
 The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1).
 
-```{r fig.cap="Confusion Matrices of Voting Classifier", fig.height=5}
+```{r}
 cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
 cm_hvt <- confusionMatrix(as.factor(whole_confusion_matrix$Hard.Voting), as.factor(whole_confusion_matrix$y_test))
 
@@ -552,34 +502,225 @@ p7 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
   geom_text(aes(label = Freq), vjust = 1) +
   labs(title = "Hard Voting", x = "Actual Class", y = "Predicted Class") +
   mytheme
-ggarrange(p6, p7, ncol=2,
-          common.legend = TRUE,  legend="bottom")
 ```
 
 
 
-# Conclusion and future work
+# Conclusions
 
-The voting classifier can improve the accuracy by choosing the best predict class from all the models. And it is more robust for missing data and outliers. From table 4 in appendix we can see that for accuracy, F1 score, precision and recall, soft voting performs better than weighted hard voting. Moreover, for most of the class, our voting model performs better than single model except for Galaxy and Quasar of image of spectrum data. CNN does a better job for these two class but much worse for Star.
-However, the price for better performance is more data used and model model trained. Although we use as simple model as possible for this job, the training and combining is also much more complicated for soft voting and weighted hard voting. In addition, the data we use is in very good quality and quit sufficient for training a well performed model which is not so common in real data. The corrupt or insufficient data may affect the accuracy of single model as well as voting classifier.
-According to these facts, our future work may focus on use less models with better voting strategies and use less data with worse data quality to test them.
+The voting classifier can improve the accuracy by choosing the best predict class from all the models. And it is more robust for missing data and outliers. From Table 4 we can see that across all evaluation index, soft voting performs better than weighted hard voting. Moreover, for most of the classes, our voting model performs better than single model except for Galaxy and Quasar of image of spectrum data. CNN does a better job for these two class but much worse for Star.
+However, the price for better performance is more data used and more model trained. Although we use as simple model as possible for this job, the training and combining is also much more complicated for soft voting and weighted hard voting. In addition, the data we use is in a very good quality and quite sufficient for training a well performed model which is not so common in real situation. The corrupt or insufficient data may affect the accuracy of single models as well as voting classifiers.
 
-
-(need table for coefficients of logistic regression, picture of tree model, intepretation of logistic regression (one unit change leads to ...) and tree model (an object with u<.. redshift > ... will be classified as ....))
+According to these facts, our future work may focus on using less models with better voting strategies and using less data with worse data quality to test them.
 
 \newpage
+
+# References
+
+<div id="refs"></div>
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\newpage
+
+# Appendix
+## Figures
+\begin{figure}
+\centering
+\begin{minipage}{0.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{./data/simple_cnn_visualization.png}
+\caption{Structure of CNN}
+\label{fig:cnn}
+\end{minipage}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{minipage}{\textwidth}
+\centering
+\includegraphics[width=\linewidth]{./images/decision_tree.png}
+\caption{Result of Decision Tree}
+\label{fig:res_dt}
+\end{minipage}
+\end{figure}
+
+```{r cm-metadata, fig.cap='Confusion Matrices of Metadata Models'}
+library(ggpubr)
+ggarrange(p1,p2,p3, ncol=3,
+          common.legend = TRUE,  legend="bottom")
+```
+
+```{r loss-cnns, fig.cap='Loss Curve Plot for Different CNN'}
+ggarrange(p_sv,p_hyper, ncol=2,
+          common.legend = F,
+          legend="bottom")
+```
+
+```{r loss-simp-cnn, fig.cap="Loss Curve"}
+ggplot(SimpleCNN_SGD_spec, aes(x = Iteration, y = Loss, color = Model)) + 
+  geom_line() + 
+  geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
+  theme_minimal() +
+  labs(title = "Loss Curves for SimpleCNN_SGD_spec", x = "Iteration", y = "Loss") +
+  mytheme + 
+  theme(legend.position="none")
+```
+
+```{r cm-cnn, fig.cap="Confusion Matrices of CNN Models"}
+ggarrange(p4, p5, ncol=2,
+          common.legend = TRUE,  legend="bottom")
+```
+
+```{r cm-vc, fig.cap="Confusion Matrices of Voting Classifier"}
+ggarrange(p6, p7, ncol=2,
+          common.legend = TRUE,  legend="bottom")
+```
 
 \quad
 
 \newpage
 
-\onecolumn
+## Tables
 
-# Appendix
+\begin{table}[H]
+\centering
+\caption{Metadata of the celestial objects}
+\label{tab:metadata}
+\centering
+\begin{tabular}[t]{ll}
+\toprule
+Variables & Explanations\\
+\midrule
+objid & Object Identifier\\
+ra & Right Ascension angle (at J2000 epoch)\\
+dec & Declination angle (at J2000 epoch)\\
+u & Ultraviolet filter\\
+g & Green filter\\
+\addlinespace
+r & Red filter\\
+i & Near Infrared filter\\
+z & Infrared filter\\
+run & Run Number\\
+rerun & Rerun Number\\
+\addlinespace
+camcol & Camera column\\
+field & Field number\\
+specobjid & Unique ID used for optical spectroscopic objects\\
+class & Object class\\
+redshift & Redshift value based on the increase in wavelength\\
+\addlinespace
+plate & Plate\\
+mjd & Modified Julian Date\\
+fiberid & fiber ID\\
+plateid & Plate ID\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+```{r}
+lr_coef = cbind(py$intercept, py$coef)
+colnames(lr_coef) = c("Intercept", colnames(testData)[-7])
+rownames(lr_coef) = c("Galaxy", "Qso", "Star")
+
+# kable(lr_coef, format = "latex",
+#       booktabs = TRUE,
+#       row.names = T,
+#       digits = 2,
+#       caption = "Coefficients of Logistic Regression") %>%
+#   kable_styling(full_width = F, position = "center")
+```
+
+
+\begin{table}[H]
+\centering
+\caption{Coefficients of Logistic Regression}
+\label{tab:lr}
+\centering
+\begin{tabular}[t]{lrrrrrrr}
+\toprule
+  & Intercept & u & g & r & i & z & redshift\\
+\midrule
+Galaxy & 15.10 & 1.11 & -1.70 & -0.15 & 0.61 & -0.02 & 23.36\\
+Qso & 16.81 & -2.88 & 5.21 & 0.80 & -1.22 & -2.14 & 32.51\\
+Star & -31.91 & 1.77 & -3.51 & -0.64 & 0.61 & 2.16 & -55.86\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+```{r cnn-comp}
+CNN_select_table <- data.frame(
+  Name = c("SimpleCNN","VGG16","Res18"),
+  Accuracy = c("91.68%","94.11%","94.89%"),
+  "Training Time" = paste0(c("635","1281","1324"), " s")
+)
+
+# knitr::kable(CNN_select_table, 
+#              format = "latex", 
+#              booktabs = T,
+#              caption = "CNN Model Comparison",) %>%
+#   kable_styling(full_width = F, position = "center", 
+#                 # font_size = 8
+#   )
+```
+
+\begin{table}[H]
+\centering
+\caption{CNN Model Comparison}
+\label{tab:cnn-comp}
+\centering
+\begin{tabular}[t]{lll}
+\toprule
+Name & Accuracy & Training.Time\\
+\midrule
+SimpleCNN & 91.68\% & 635 s\\
+VGG16 & 94.11\% & 1281 s\\
+Res18 & 94.89\% & 1324 s\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+```{r}
+SimpleCNN_comp <- data.frame(
+  Optimizer = c("SGD_mom0.9","SGD_mom0.95","SGD_mom0.99","Adam"),
+  Accuray = c("91.68%","92.84%","93.78%","93.91%"),
+  "Training Time" = paste0(c("458","463","462","463"), " s")
+)
+
+# knitr::kable(SimpleCNN_comp,
+#              format = "latex", 
+#              booktabs = T,
+#              caption = "Simple CNN Tuning Comparison",) %>%
+#   kable_styling(full_width = F, 
+#                 position = "center")
+```
+
+\begin{table}[H]
+\centering
+\caption{Simple CNN Tuning Comparison}
+\label{tab:simple-cnn}
+\centering
+\begin{tabular}[t]{lll}
+\toprule
+Optimizer & Accuray & Training.Time\\
+\midrule
+SGD\_mom0.9 & 91.68\% & 458 s\\
+SGD\_mom0.95 & 92.84\% & 463 s\\
+SGD\_mom0.99 & 93.78\% & 462 s\\
+Adam & 93.91\% & 463 s\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
 
 \begin{table}[H]
 \centering
 \caption{Evaluation of Models}
+\label{tab:eval}
 \centering
 \begin{tabular}[t]{ccccccccc}
 \toprule
@@ -589,17 +730,17 @@ Model &  & kNN & DT & LR & CNN & CNN & SVC & HVC\\
 \midrule
 Accuracy &  & 0.968 & 0.9744 & 0.97 & 0.9173 & 0.8891 & 0.9897 & 0.9863\\
 \addlinespace
- & Galaxy & 0.9576 & 0.9434 & 0.9619 & 0.9522 & 0.9927 & 0.9773 & 0.9731\\
+& Galaxy & 0.9576 & 0.9434 & 0.9619 & 0.9522 & 0.9927 & 0.9773 & 0.9731\\
 Precision & Qso & 0.9886 & 0.9882 & 0.9889 & 0.9296 & 0.9908 & 0.9971 & 0.9949\\
- & Star & 0.9585 & 0.9934 & 0.96 & 0.8745 & 0.7577 & 0.9952 & 0.9912\\
+& Star & 0.9585 & 0.9934 & 0.96 & 0.8745 & 0.7577 & 0.9952 & 0.9912\\
 \addlinespace
- & Galaxy & 0.9484 & 0.9829 & 0.9509 & 0.9736 & 0.8179 & 0.9931 & 0.9869\\
+& Galaxy & 0.9484 & 0.9829 & 0.9509 & 0.9736 & 0.8179 & 0.9931 & 0.9869\\
 Recall & Qso & 0.9719 & 0.9413 & 0.9616 & 0.8281 & 0.8524 & 0.9761 & 0.9719\\
- & Star & 0.9838 & 0.9989 & 0.9974 & 0.9503 & 0.997 & 1 & 1\\
+& Star & 0.9838 & 0.9989 & 0.9974 & 0.9503 & 0.997 & 1 & 1\\
 \addlinespace
- & Galaxy & 0.953 & 0.9628 & 0.9564 & 0.9628 & 0.8969 & 0.9851 & 0.98\\
+& Galaxy & 0.953 & 0.9628 & 0.9564 & 0.9628 & 0.8969 & 0.9851 & 0.98\\
 F1 & Qso & 0.9802 & 0.9642 & 0.9751 & 0.8759 & 0.9164 & 0.9865 & 0.9833\\
- & Star & 0.971 & 0.9962 & 0.9784 & 0.9109 & 0.861 & 0.9976 & 0.9956\\
+& Star & 0.971 & 0.9962 & 0.9784 & 0.9109 & 0.861 & 0.9976 & 0.9956\\
 \bottomrule
 \multicolumn{9}{l}{\rule{0pt}{1em}\textit{Note: }}\\
 \multicolumn{9}{l}{\rule{0pt}{1em}M: Metadata. IC: Image of Celestial Objects. IS: Image of Spectrum.}\\
