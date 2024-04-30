@@ -9,7 +9,7 @@ fontsize: 11pt
 output:
   bookdown::pdf_document2:
     number_sections: yes
-    keep_tex: true
+    # keep_tex: true
     toc: false
 bibliography: references.bib
 nocite: '@*'
@@ -113,13 +113,13 @@ tab_exp = data.frame(Variables, Explanations)
 #   kable_styling(full_width = F, position = "center")
 ```
 
-They can be found in this [\textcolor{blue}{link}](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from <https://www.sdss.org>. Moreover, the distribution of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced. Moreover, we encode the class with the following mapping: Galaxy ~ 0, Quasar ~ 1, Star ~ 2.
+They can be found in this [\textcolor{blue}{link}](https://github.com/siriuszza/stat679final/tree/main/data). All the data is obtained from <https://www.sdss.org>. Moreover, the number of classes of the celestial objects is 33333 samples each, which is selected from the website to make sure the dataset is balanced. Moreover, we encode the class with the following mapping: Galaxy ~ 0, Quasar ~ 1, Star ~ 2.
 
 # Exploratory Data Analysis
 
 First, we will conduct exploratory data analysis on our dataset to better understand it and to find any possible errors. Figure \@ref(fig:boxplot) shows the distribution of variables that are meaningful for classification. We can see that the means of all variables across different classes are quite different. Moreover, there are no significant outliers.
 
-```{r boxplot, fig.cap="Boxplot", fig.height=2.7, fig.width=5}
+```{r boxplot, fig.cap="Boxplot", fig.height=2.3, fig.width=5}
 df_org = read.csv("./data/metadata/org_metadata.csv")
 df_org[df_org == -9999] = NA
 df_long = gather(df_org, key = "variable", value = "value", u, g, r, i, z, redshift) 
@@ -127,7 +127,7 @@ df_long = gather(df_org, key = "variable", value = "value", u, g, r, i, z, redsh
 ggplot(df_long, aes(x = variable, y = value, col = class)) +
   geom_boxplot(alpha = 0.5) +
   labs(x = "Variable", y = "Value") + mytheme +
-  guides(color = guide_legend(position = "bottom"))
+  guides(color = guide_legend(position = "right"))
 ```
 
 Then, Figure \@ref(fig:corr) gives the correlationship between variables in the metadata. We can see that **redshift** has strong correlationship with the class of the object. Also, the filter variables (**u**, **g**, **r**, **i**, **z**) are correlated with each other.
@@ -139,8 +139,6 @@ corrplot(corr)
 ```
 
 Next, we will check and deal with missing values in the dataset. For images of the celestial objects, there is no missing value. For images of the spectrum, we have 14115 images that are unreadable. Considering that they are hard to impute, we just ignore them and conduct the analysis on the spectrum based on the rest of the images. For the metadata, there are 1 missing value for **i** and 3 for **z**. We use regression imputation with filter variables to impute the missing values as they are correlated with each other and quite scattered. 
-
-
 
 <!-- \newpage -->
 
@@ -161,7 +159,7 @@ For our three types of data, we intend to use three seperate methods to build th
 The k-Nearest Neighbors (kNN) algorithm is a simple, but powerful machine learning technique that can be used for classification. At its core, kNN makes predictions about the classification of a data point based on the majority vote or average of its *k* nearest neighbors. With cross validation, we eventually selected \( k = 3\).
 
 ## Decision Tree
-A Decision Tree is a machine learning algorithm that can be used for classification. It models decisions and their possible consequences as a tree-like structure, making it intuitive and easy to visualize. The decision-making process starts at the root node and splits the data on the feature that results in the most significant information gain (IG) or the greatest reduction in impurity (such as Gini impurity or entropy). The process continues recursively, creating decision nodes and leaf nodes. Decision nodes ask a question and branch based on the answers to those questions, leading to further splits or to leaf nodes. These nodes represent the outcome. With cross validation and consideration on the complexity of the tree, we set the maximum depth as 4, and use Gini impurity to prune the tree.
+A Decision Tree is a machine learning algorithm that can be used for classification. It models decisions and their possible consequences as a tree-like structure, making it intuitive and easy to visualize. The decision-making process starts at the root node and splits the data on the feature that results in the most significant information gain or the greatest reduction in impurity. The process continues recursively, creating decision nodes and leaf nodes. Decision nodes ask a question and branch based on the answers to those questions, leading to further splits or to leaf nodes. These nodes represent the outcome. With cross validation and consideration on the complexity of the tree, we set the maximum depth as 4, and use Gini impurity to prune the tree.
 
 ## Logistic Regression
 Multinomial logistic regression, extends the traditional logistic regression model to handle cases where the target variable categories are more than two. Unlike binary logistic regression, which uses one binary predictor per class, multi-class logistic regression models the probabilities of the multiple classes using a softmax function, which generalizes the logistic function for multi-class problems:
@@ -170,21 +168,35 @@ $$
 P(Y_i = k) = \frac{e^{\beta_k \cdot X_i}}{\sum_{j = 1}^3 e^{\beta_j \cdot X_i}}, i = 0, 1, 2.
 $$
 
-With cross validation, we have selected the hyperparameters as follows: Regularization: L2, \(C = 1\), where the value of \(C\) gives the strength of regularization.
+With cross validation, we have selected the hyperparameter \(C = 1\), where the value of \(C\) gives the strength of regularization.
 
-## CNN
+## Convolutional Neural Network
 
-Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of NN in this problem. This CNN is quite shallow (337k parameters) with two convolutional layers and a maxpooling in between, followed by three fully connected layers. The structure can be seen in Figure \ref{fig:cnn}. The competitor is VGG16 which is a much deeper NN with 13 convoluntional layers and 3 fully connected layers (138 million parameters).
+Before we get into complex Neural Networks, we firstly try to use a simple CNN to test the performance of neural network model in this problem. This CNN is quite shallow (337k parameters) with two convolutional layers and a maxpooling in between, followed by three fully connected layers. The structure can be seen in Figure \ref{fig:cnn}. The competitor is VGG16 which is a much deeper neural network with 13 convoluntional layers and 3 fully connected layers (138 million parameters).
 
 ## Voting Classifier
 
-We try to use two types of voting methods, soft voting and weighted hard voting. Their strategy are slightly different but the idea is similar: to combine the output of several model together to generate a more accurate one. 
+We try to use two types of voting methods, soft voting and weighted hard voting. Their strategy are slightly different but the idea is similar: to combine the output of several models together to generate a more accurate one. 
 
-Suppose we have models $\{C_1,\cdots C_n\}$, for a given input $x$. Each model can have a prediction: $y^i_{pred}|x=(y_1,y_2,y_3)$, where one of $y_j$ is 1, indicating the predicted class is $j$, while others are 0. Or a predicting probability: $P_i(y_j | x)$ which is the predicting probability for x belong to class $j$ for $i_{th}$ model. 
+Suppose we have models $\{C_1,\cdots C_n\}$. For a given input $\bm x$. Each model can have a prediction: 
 
-For kNN and Tree model, their prediction and predicting probability are the same which means their predicting probability is one for predicting class. For soft voting, the prediction is made by average predicting probability of all candidate models and prediction of the voting model is the class with largest predicting probability. The probabilities for voting classifier given input \(x\) is $P(y_j | x) = \frac{1}{m} \sum_{i=1}^m P_i(y_j | x)$. So the prediction is $p(x) = \arg \max_{y_j} P(y_j | x)$ where $m$ is the number of models. 
+$$
+\bm y^i_{\text{pred}} | \bm x = (y_1, ~y_2, ~y_3), ~i = 1, \cdots, n,
+$$ 
 
-For weighted hard voting, the prediction is made by sum of weighted voting for each class for all the candidate models and prediction of the voting model is the class with largest number of weighted voting. For a given input, \(C_i\) has a predict \(y^{i}|x:~y^{i}_{k=j}=1, ~y^{i}_{k\neq j}=0\) and the prediction for weighted hard voting is \(y_{pred}=\sum_i w_i\cdot y^{i}|x\). So the predict class is \(argmax_j~y_{pred}\).
+where $\sum_{j=1}^3 y_j = 1$ and $y_j = 0, 1$. $y_j = 1$ means that the predicted class is $j-1$. 
+
+Or each model can have a predicting probability:
+
+$$
+\bm y^i_{\text{pred-proba}} | \bm x = (p_1, ~p_2, ~p_3), ~i = 1, \cdots, n,
+$$
+
+where $\sum_{j=1}^3 p_j = 1$, and $p_j$ is the predicting probability for $\bm x$ belongs to class $j-1$.
+
+For soft voting, the prediction is made by average predicting probability of all candidate models and prediction of the voting model is the class with largest predicting probability. The probabilities for voting classifier given input \(\bm x\) is $\bm y_{\text{pred-proba}} = \frac{1}{n} \sum_{i=1}^n \bm y^i_{\text{pred-proba}}$. So the prediction is $j-1$, where $j = \arg \max \bm y_{\text{pred-proba}}$.
+
+For weighted hard voting, we firstly sum the weighted voting for each class for all the candidate models. Then the prediction of the voting model is the class with largest number of weighted voting. For a given input, \(C_i\) has a predict $\bm y^i_{\text{pred}}$. The prediction for weighted hard voting is \(\bm y_{\text{pred}}=\sum_{i=1}^n w_i \cdot y^i_{\text{pred}}\), where \(\sum_{i=1}^n w_i = 1 \), and \(w_i \propto \text{accuracy of } C_i\). As a result, the predicted class is $j - 1$, where \(j = \arg \max \bm y_{\text{pred}}\).
 
 # Results
 ## Metadata
@@ -475,7 +487,7 @@ SimpleCNN_SGD_spec <- data.frame(
 ## Voting Classifier
 If we use voting strategy for only metadata model or CNN, we see a small improve of accuracy on both of them. For metadata models. the soft voting has 97.75%, weighted hard voting has 97.55% on validation data set which is better than KNN (96.80%), Tree model (97.44%) and Logistic Regression (97.00%). For CNN models, soft voting:  97.71%, weighted hard voting: 91.55% are also better than CNN celestial: 91.73% and CNN spectrum 88.91%.
 
-The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix (Figure \@ref(fig:cm-vc)) we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1). The detailed model evaluation indexes are shown in Table \@ref(tab:eval)
+The accuracy of voting classifiers are higher than any single model if we combine metadata models and CNN models together: Soft Voting:98.97%, Weighted Hard Voting: 98.63%. From the confusion matrix (Figure \@ref(fig:cm-vc)) we can see that both of them classify star (class 2) perfectly followed by Galaxy (class 0) and Quasar (class 1). The detailed model evaluation indexes are shown in Table \@ref(tab:eval).
 
 ```{r}
 cm_svt <- confusionMatrix(as.factor(whole_confusion_matrix$Soft.Voting), as.factor(whole_confusion_matrix$y_test))
@@ -508,10 +520,13 @@ p7 <- ggplot(cm_df, aes(x = Reference, y = Prediction, fill = Freq)) +
 
 # Conclusions
 
-The voting classifier can improve the accuracy by choosing the best predict class from all the models. And it is more robust for missing data and outliers. From Table 4 we can see that across all evaluation index, soft voting performs better than weighted hard voting. Moreover, for most of the classes, our voting model performs better than single model except for Galaxy and Quasar of image of spectrum data. CNN does a better job for these two class but much worse for Star.
-However, the price for better performance is more data used and more model trained. Although we use as simple model as possible for this job, the training and combining is also much more complicated for soft voting and weighted hard voting. In addition, the data we use is in a very good quality and quite sufficient for training a well performed model which is not so common in real situation. The corrupt or insufficient data may affect the accuracy of single models as well as voting classifiers.
+The voting classifier can improve the accuracy by choosing the best predict class from all the models. And it is more robust for missing data and outliers. 
 
-According to these facts, our future work may focus on using less models with better voting strategies and using less data with worse data quality to test them.
+From Table \@ref(tab:eval) we can see that across all evaluation indexes, soft voting performs better than weighted hard voting. Moreover, for most of the classes, our voting models perform better than single models except for Galaxy and Quasar of image of spectrum data, where CNN does a better job for these two classes but much worse for Star.
+
+However, the tradeoff for better performance is more data used and more model trained. Although we use as simple model as possible for this job, the training and combining is also much more complicated for soft voting and weighted hard voting. In addition, the data we use is in a very good quality and quite sufficient for training a well performed model which is not so common in real situation. The corrupt or insufficient data may affect the accuracy of single models as well as voting classifiers.
+
+According to these facts, our future work may focus on using less models with better voting strategies and using less data with worse data quality.
 
 \newpage
 
@@ -558,7 +573,7 @@ ggarrange(p_sv,p_hyper, ncol=2,
           legend="bottom")
 ```
 
-```{r loss-simp-cnn, fig.cap="Loss Curve"}
+```{r loss-simp-cnn, fig.cap="Loss Curve Plot for Final Simple CNN"}
 ggplot(SimpleCNN_SGD_spec, aes(x = Iteration, y = Loss, color = Model)) + 
   geom_line() + 
   geom_smooth(se = FALSE, method = "loess") +  # Smoothed line
